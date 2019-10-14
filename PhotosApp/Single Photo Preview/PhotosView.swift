@@ -9,6 +9,7 @@
 import UIKit
 
 class PhotosView: UIView & SnapView {
+
 	let previewCollection:  UICollectionView
 	let thumbnailCollection: UICollectionView
 

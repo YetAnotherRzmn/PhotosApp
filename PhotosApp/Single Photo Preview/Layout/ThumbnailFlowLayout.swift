@@ -52,7 +52,6 @@ extension ThumbnailFlowLayout {
 			if size != itemSize {
 				itemSize = size
 				sectionInset = UIEdgeInsets(top: 0, left: farInset, bottom: 0, right: farInset)
-				invalidateLayout()
 			}
 		}
 		super.prepare()
