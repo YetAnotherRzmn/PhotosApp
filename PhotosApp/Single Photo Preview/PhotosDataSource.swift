@@ -30,12 +30,19 @@ class PhotosDataSource: NSObject {
 							forCellWithReuseIdentifier: ThumbnailCollectionViewCell.reuseId)
 	}
 
+	var urls: [URL] {
+		Bundle.main.urls(forResourcesWithExtension: .none, subdirectory: "Data")!
+	}
+
 	func loadImages() -> [UIImage] {
-		guard let urls = Bundle.main.urls(forResourcesWithExtension: .none,
-										  subdirectory: "Data") else { fatalError() }
-		return urls
+		let kek = urls
 			.compactMap{ try? Data(contentsOf: $0) }
 			.compactMap(UIImage.init(data:))
+		return [kek.first!, kek.first!]
+	}
+
+	func randomImage() -> UIImage {
+		return Set(loadImages()).randomElement()!
 	}
 }
 

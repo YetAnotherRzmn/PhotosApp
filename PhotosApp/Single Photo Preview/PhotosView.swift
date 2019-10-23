@@ -12,10 +12,17 @@ class PhotosView: UIView & SnapView {
 
 	let previewCollection:  UICollectionView
 	let thumbnailCollection: UICollectionView
+	let synchronizer: ScrollSynchronizer
 
-	init() {
+	let debugCenterLine: UIView
+
+	init(sizeForIndex: ((Int) -> CGSize)?) {
 		previewCollection = UICollectionView(frame: .zero, collectionViewLayout: PreviewFlowLayout())
 		thumbnailCollection = UICollectionView(frame: .zero, collectionViewLayout: ThumbnailFlowLayout())
+		synchronizer = ScrollSynchronizer(preview: previewCollection,
+										  thumbnails: thumbnailCollection,
+										  sizeForIndex: sizeForIndex)
+		debugCenterLine = UIView()
 		super.init(frame: .zero)
 		setupUI()
 		createConstraints()
@@ -28,16 +35,29 @@ class PhotosView: UIView & SnapView {
 	func setupUI() {
 		addSubview(previewCollection)
 		addSubview(thumbnailCollection)
+		addSubview(debugCenterLine)
+
+		let backgroundColor = UIColor(named: "SinglePhotoBackground")
+
+		debugCenterLine.backgroundColor = .red
 
 		previewCollection.isPagingEnabled = true
 		previewCollection.showsVerticalScrollIndicator = false
 		previewCollection.showsHorizontalScrollIndicator = false
+		previewCollection.backgroundColor = backgroundColor
 
 		thumbnailCollection.showsVerticalScrollIndicator = false
 		thumbnailCollection.showsHorizontalScrollIndicator = false
+		thumbnailCollection.backgroundColor = backgroundColor
 	}
 
 	func createConstraints() {
+		debugCenterLine.snp.makeConstraints {
+			$0.width.equalTo(1)
+			$0.height.equalToSuperview()
+			$0.centerX.equalToSuperview()
+			$0.centerY.equalToSuperview()
+		}
 		thumbnailCollection.snp.makeConstraints {
 			$0.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin)
 			$0.leading.equalToSuperview()
@@ -50,5 +70,9 @@ class PhotosView: UIView & SnapView {
 			$0.trailing.equalToSuperview()
 			$0.bottom.equalTo(thumbnailCollection.snp.top)
 		}
+	}
+
+	var indexInFocus: Int {
+		return synchronizer.activeIndex
 	}
 }

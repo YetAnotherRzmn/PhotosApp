@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		35A9E127B25DA8EB4DB8BE75 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A9E775C61C9C2687878AF4 /* SceneDelegate.swift */; };
 		35A9E71B0ACF05EB8ED89F2F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A9EC15CBFC6521F22105B8 /* AppDelegate.swift */; };
 		35A9ED167BD5EF28E44F0DF5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 35A9EB3DA8C91EC6F80ED4BD /* Assets.xcassets */; };
 		35A9EE5AD2D4F2CE6B351EF2 /* PhotosViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35A9EBA423331C16E4C37E26 /* PhotosViewController.swift */; };
@@ -15,6 +14,9 @@
 		84058382235196B200BECBB7 /* PreviewCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84058380235196B200BECBB7 /* PreviewCollectionViewCell.swift */; };
 		840583852351991700BECBB7 /* ThumbnailFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 840583842351991700BECBB7 /* ThumbnailFlowLayout.swift */; };
 		845A0F252353A166006D36F8 /* ParallaxLayoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845A0F242353A166006D36F8 /* ParallaxLayoutAttributes.swift */; };
+		845A0F2723542AD7006D36F8 /* ScrollSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845A0F2623542AD7006D36F8 /* ScrollSynchronizer.swift */; };
+		84AEBF78235C9EC100A6EFFB /* ThumbnailLayoutEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AEBF77235C9EC100A6EFFB /* ThumbnailLayoutEvent.swift */; };
+		84AEBF7A235CD95600A6EFFB /* ProgressAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AEBF79235CD95600A6EFFB /* ProgressAnimator.swift */; };
 		84E27EF92350D8AE0021A067 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 84E27EF82350D8AE0021A067 /* Data */; };
 		84E27EFD2351943A0021A067 /* ThumbnailCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E27EFB2351943A0021A067 /* ThumbnailCollectionViewCell.swift */; };
 		84E7CF3923519B4500ED729A /* CellWithImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E7CF3823519B4500ED729A /* CellWithImage.swift */; };
@@ -28,7 +30,6 @@
 /* Begin PBXFileReference section */
 		35A9E1660A93612319C8E819 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		35A9E279E7439A92C930C6EA /* PhotosApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PhotosApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		35A9E775C61C9C2687878AF4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		35A9EB3DA8C91EC6F80ED4BD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		35A9EBA423331C16E4C37E26 /* PhotosViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhotosViewController.swift; sourceTree = "<group>"; };
 		35A9EC15CBFC6521F22105B8 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -36,6 +37,9 @@
 		84058380235196B200BECBB7 /* PreviewCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PreviewCollectionViewCell.swift; sourceTree = "<group>"; };
 		840583842351991700BECBB7 /* ThumbnailFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailFlowLayout.swift; sourceTree = "<group>"; };
 		845A0F242353A166006D36F8 /* ParallaxLayoutAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParallaxLayoutAttributes.swift; sourceTree = "<group>"; };
+		845A0F2623542AD7006D36F8 /* ScrollSynchronizer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScrollSynchronizer.swift; sourceTree = "<group>"; };
+		84AEBF77235C9EC100A6EFFB /* ThumbnailLayoutEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailLayoutEvent.swift; sourceTree = "<group>"; };
+		84AEBF79235CD95600A6EFFB /* ProgressAnimator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProgressAnimator.swift; sourceTree = "<group>"; };
 		84E27EF82350D8AE0021A067 /* Data */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Data; sourceTree = "<group>"; };
 		84E27EFB2351943A0021A067 /* ThumbnailCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailCollectionViewCell.swift; sourceTree = "<group>"; };
 		84E7CF3823519B4500ED729A /* CellWithImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CellWithImage.swift; sourceTree = "<group>"; };
@@ -74,7 +78,6 @@
 				84E7CF3C23537B7B00ED729A /* SnapView.swift */,
 				8405837E235195D800BECBB7 /* UICollectionViewCell+reuseId.swift */,
 				35A9EC15CBFC6521F22105B8 /* AppDelegate.swift */,
-				35A9E775C61C9C2687878AF4 /* SceneDelegate.swift */,
 			);
 			path = PhotosApp;
 			sourceTree = "<group>";
@@ -93,6 +96,8 @@
 				840583842351991700BECBB7 /* ThumbnailFlowLayout.swift */,
 				84E7CF3A23535C8100ED729A /* PreviewFlowLayout.swift */,
 				845A0F242353A166006D36F8 /* ParallaxLayoutAttributes.swift */,
+				84AEBF77235C9EC100A6EFFB /* ThumbnailLayoutEvent.swift */,
+				84AEBF79235CD95600A6EFFB /* ProgressAnimator.swift */,
 			);
 			path = Layout;
 			sourceTree = "<group>";
@@ -110,6 +115,7 @@
 		84E7CF48235385FB00ED729A /* Single Photo Preview */ = {
 			isa = PBXGroup;
 			children = (
+				845A0F2623542AD7006D36F8 /* ScrollSynchronizer.swift */,
 				84E7CF3E2353826300ED729A /* PhotosView.swift */,
 				84E7CF40235382A500ED729A /* PhotosDataSource.swift */,
 				35A9EBA423331C16E4C37E26 /* PhotosViewController.swift */,
@@ -205,13 +211,15 @@
 			files = (
 				84E7CF3D23537B7B00ED729A /* SnapView.swift in Sources */,
 				35A9E71B0ACF05EB8ED89F2F /* AppDelegate.swift in Sources */,
-				35A9E127B25DA8EB4DB8BE75 /* SceneDelegate.swift in Sources */,
 				845A0F252353A166006D36F8 /* ParallaxLayoutAttributes.swift in Sources */,
 				840583852351991700BECBB7 /* ThumbnailFlowLayout.swift in Sources */,
 				84E7CF3F2353826300ED729A /* PhotosView.swift in Sources */,
 				84E7CF41235382A500ED729A /* PhotosDataSource.swift in Sources */,
 				84E27EFD2351943A0021A067 /* ThumbnailCollectionViewCell.swift in Sources */,
+				845A0F2723542AD7006D36F8 /* ScrollSynchronizer.swift in Sources */,
 				84058382235196B200BECBB7 /* PreviewCollectionViewCell.swift in Sources */,
+				84AEBF7A235CD95600A6EFFB /* ProgressAnimator.swift in Sources */,
+				84AEBF78235C9EC100A6EFFB /* ThumbnailLayoutEvent.swift in Sources */,
 				84E7CF3923519B4500ED729A /* CellWithImage.swift in Sources */,
 				8405837F235195D800BECBB7 /* UICollectionViewCell+reuseId.swift in Sources */,
 				84E7CF3B23535C8100ED729A /* PreviewFlowLayout.swift in Sources */,
@@ -228,6 +236,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 2833TJF677;
 				INFOPLIST_FILE = "$(SRCROOT)/PhotosApp/Resources/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -359,6 +368,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = 2833TJF677;
 				INFOPLIST_FILE = "$(SRCROOT)/PhotosApp/Resources/Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 11.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

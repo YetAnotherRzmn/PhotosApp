@@ -16,13 +16,34 @@ class PhotosViewController: UIViewController {
 	}
 
 	override func loadView() {
-		view = PhotosView()
+		view = PhotosView(sizeForIndex: {
+			if let images = self.dataSource?.images {
+				return images.count > $0 ? images[$0].size : CGSize(width: 1, height: 1)
+			}
+			return CGSize(width: 1, height: 1)
+		})
 		dataSource = PhotosDataSource(preview: contentView.previewCollection,
 									  thumbnails: contentView.thumbnailCollection)
 		toolbarItems = [
 			UIBarButtonItem(barButtonSystemItem: .action, target: .none, action: .none),
 			UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: .none, action: .none),
-			UIBarButtonItem(barButtonSystemItem: .trash, target: .none, action: .none)
+			UIBarButtonItem(barButtonSystemItem: .add, target: self, action: #selector(onAdd(sender:))),
+			UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: .none, action: .none),
+			UIBarButtonItem(barButtonSystemItem: .trash, target: self, action: #selector(onDelete(sender:)))
 		]
+	}
+
+	@objc func onDelete(sender: UIBarButtonItem) {
+		let index = contentView.indexInFocus
+		contentView.synchronizer.handle(event: .remove(index: IndexPath(row: index, section: 0), completion: {
+			self.dataSource?.images.remove(at: index)
+		}))
+	}
+
+	@objc func onAdd(sender: UIBarButtonItem) {
+		if let dataSource = dataSource {
+			dataSource.images.append(dataSource.randomImage())
+			contentView.synchronizer.reload()
+		}
 	}
 }
