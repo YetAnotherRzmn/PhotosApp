@@ -76,9 +76,10 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
 		preview.collectionView?.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
 
 		UIView.animate(withDuration: 0.15, animations: { [unowned self] in
-			self.thumbnails.collectionView?.scrollToItem(at: indexPath,
-														at: .centeredHorizontally,
-														animated: false)
+			self.thumbnails.collectionView?.scrollToItem(
+				at: indexPath,
+				at: .centeredHorizontally,
+				animated: false)
 		}) { [unowned self] _ in
 			self.bind()
 		}
@@ -87,41 +88,43 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
 
 extension ScrollSynchronizer {
 	enum Event {
-		case remove(index: IndexPath, completion: (() -> ())?)
+		case remove(index: IndexPath, dataSourceUpdate: () -> (), completion: (() -> ())?)
+		case move(index: IndexPath, completion: (() -> ())?)
 	}
 
 	func handle(event: Event) {
 		switch event {
-		case .remove(let index, let completion):
-			delete(at: index, completion: completion)
+		case .remove(let index, let update, let completion):
+			delete(at: index, dataSourceUpdate: update, completion: completion)
+		case .move(let index, let completion):
+			move(to: index, completion: completion)
 		}
 	}
 }
 
-// MARK: - private
-extension ScrollSynchronizer {
-	func delete(at indexPath: IndexPath, completion: (() -> ())?) {
+// MARK: -
+private extension ScrollSynchronizer {
+
+	func delete(
+		at indexPath: IndexPath,
+		dataSourceUpdate: @escaping () -> (),
+		completion: (() -> ())?) {
+
 		unbind()
-
-//		let animatedAspect = thumbnails.sizeForIndex?(indexPath.row).aspectRatio ?? 1
-		let nextAspect = thumbnails.sizeForIndex?(indexPath.row).aspectRatio ?? 1
-		let diff = thumbnails.itemSize.height * nextAspect - thumbnails.itemSize.width
-
-		let animator = DefaultProgressAnimator(initial: .zero, onProgress: { current, delta in
-			self.thumbnails.updates = [
-				indexPath: { cell in
-					cell.collapsed(by: current)
-				}
-			]
-			self.thumbnails.invalidateLayout()
-		})
-		animator.setProgress(progress: 1, duration: 0.15, completion: { _ in
-			self.thumbnails.updates.removeValue(forKey: indexPath)
-			self.thumbnails.phantom = ThumbnailFlowLayout.PhantomItem(width: diff, floatIndex: CGFloat(indexPath.row) + 0.5)
-			completion?()
+		DeleteAnimation(thumbnails: thumbnails, preview: preview, index: indexPath).run {
+			dataSourceUpdate()
 			self.thumbnails.collectionView?.deleteItems(at: [indexPath])
 			self.preview.collectionView?.deleteItems(at: [indexPath])
 			self.bind()
-		})
+			completion?()
+		}
+	}
+
+	func move(to indexPath: IndexPath, completion: (() -> ())?) {
+
+		unbind()
+		MoveAnimation(thumbnails: thumbnails, preview: preview, index: indexPath).run {
+			self.bind()
+		}
 	}
 }

@@ -56,7 +56,8 @@ class DefaultProgressAnimator {
 	fileprivate let timing: TimingFunction
 
 	required init(initial progress: CGFloat,
-				  onProgress: @escaping (CGFloat, CGFloat) -> (), easing: TimingFunction = LinearTimingFunction()) {
+				  onProgress: @escaping (CGFloat, CGFloat) -> (),
+				  easing: TimingFunction = LinearTimingFunction()) {
 		self.currentProgress = progress
 		self.onProgress = onProgress
 		self.timing = easing

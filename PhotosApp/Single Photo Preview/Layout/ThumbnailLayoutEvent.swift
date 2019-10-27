@@ -10,94 +10,155 @@ import UIKit
 
 extension ThumbnailFlowLayout {
 
-	struct PhantomItem {
-		let width: CGFloat
-		let floatIndex: CGFloat // N + 0.5
+	struct CellState: Equatable {
+		typealias UpdateClosure = (CellState) -> (CellState)
 
-		func greater(than index: IndexPath) -> Bool {
-			return floatIndex > CGFloat(index.row)
+		enum Direction {
+			case left
+			case right
+
+			var inversed: Direction {
+				self == .left ? .right : .left
+			}
 		}
 
-		func lesser(than index: IndexPath) -> Bool {
-			return CGFloat(index.row) < floatIndex
-		}
-	}
-
-
-	struct Cell: Equatable {
+		let defaultSize: CGSize
 		let aspectRatio: CGFloat
 		let indexPath: IndexPath
 
 		let expanding: CGFloat
 		let collapsing: CGFloat
+		let deleting: CGFloat
+		let deletingDirection: Direction
+	}
+}
 
-		let defaultSize: CGSize
-		let defaultInset: CGFloat
+// MARK: - api
+extension ThumbnailFlowLayout.CellState {
 
-		func expanded(by rate: CGFloat) -> Cell {
-			return Cell(aspectRatio: aspectRatio,
-						indexPath: indexPath,
-						expanding: rate,
-						collapsing: collapsing,
-						defaultSize: defaultSize,
-						defaultInset: defaultInset)
+	enum Update {
+		case expand(CGFloat)
+		case collapse(CGFloat)
+		case delete(CGFloat, Direction)
+
+		var closure: UpdateClosure {
+			return { $0.updated(by: self) }
 		}
+	}
 
-		func collapsed(by rate: CGFloat) -> Cell {
-			return Cell(aspectRatio: aspectRatio,
-						indexPath: indexPath,
-						expanding: expanding,
-						collapsing: rate,
-						defaultSize: defaultSize,
-						defaultInset: defaultInset)
-		}
+	func attributes(from layout: UICollectionViewFlowLayout,
+					with sideCells: [ThumbnailFlowLayout.CellState]) -> UICollectionViewLayoutAttributes? {
+		let attributes = layout.layoutAttributesForItem(at: indexPath)
 
-		func aspect(by ratio: CGFloat) -> Cell {
-			return Cell(aspectRatio: ratio,
-						indexPath: indexPath,
-						expanding: expanding,
-						collapsing: collapsing,
-						defaultSize: defaultSize,
-						defaultInset: defaultInset)
-		}
+		attributes?.size = size
+		attributes?.alpha = 1 - collapsing
+		attributes?.center = center
 
-		func update(attributes: Attributes, sideCells: [IndexPath: Cell], phantom: PhantomItem? = .none) {
-			attributes.cell = self
-			attributes.size = size
-			attributes.center = center
-
-			let offset = sideCells.values.reduce(0) { (current, cell) -> CGFloat in
-				if attributes.indexPath < cell.indexPath {
-					return current - cell.addditionalWidth / 2
-				}
-				if attributes.indexPath > cell.indexPath {
-					return current + cell.addditionalWidth / 2
-				}
-				return current
+		attributes?.center.x += sideCells.reduce(0) { (current, cell) -> CGFloat in
+			if indexPath < cell.indexPath {
+				return current - cell.leftShift
 			}
-			attributes.center.x += offset
-			if let phantom = phantom {
-				if phantom.greater(than: attributes.indexPath) {
-					attributes.center.x -= phantom.width / 2
-				} else {
-					attributes.center.x += phantom.width / 2
-				}
+			if indexPath > cell.indexPath {
+				return current + cell.rightShift
 			}
-			attributes.alpha = (1 - collapsing)
+			return current
 		}
 
-		var addditionalWidth: CGFloat {
-			(defaultSize.height * aspectRatio - defaultSize.width) * expanding
-		}
+		return attributes
+	}
 
-		var size: CGSize {
-			CGSize(width: (defaultSize.width + addditionalWidth) * (1 - collapsing),
-				   height: defaultSize.height * (1 - collapsing))
+	func updated(by update: Update) -> ThumbnailFlowLayout.CellState {
+		switch update {
+		case .collapse(let rate):
+			return collapsed(by: rate)
+		case .expand(let rate):
+			return expanded(by: rate)
+		case .delete(let rate, let direction):
+			return deleting(by: rate, with: direction)
 		}
+	}
+}
 
-		var center: CGPoint {
-			CGPoint(x: CGFloat(indexPath.row) * (defaultSize.width + defaultInset) + defaultSize.width / 2,
-					y: defaultSize.height / 2)
+// MARK: - private
+private extension ThumbnailFlowLayout.CellState {
+
+	var additionalWidth: CGFloat {
+		(defaultSize.height * aspectRatio - defaultSize.width) * expanding
+	}
+
+	func shift(from direction: Direction) -> CGFloat {
+		switch direction {
+		case .left:
+			return additionalWidth / 2 * (1 - deleting)
+		case .right:
+			return additionalWidth / 2 * (1 - deleting) - defaultSize.width * deleting
 		}
+	}
+
+	var size: CGSize {
+		CGSize(width: (defaultSize.width + additionalWidth) * (1 - collapsing),
+			   height: defaultSize.height * (1 - collapsing))
+	}
+
+	var leftShift: CGFloat {
+		shift(from: deletingDirection.inversed)
+	}
+
+	var rightShift: CGFloat {
+		shift(from: deletingDirection)
+	}
+
+	var center: CGPoint {
+		CGPoint(x: CGFloat(indexPath.row) * (defaultSize.width /*+ defaultInset*/) + defaultSize.width / 2,
+				y: defaultSize.height / 2)
+	}
+}
+
+// MARK: - builders
+private extension ThumbnailFlowLayout.CellState {
+
+	func expanded(by rate: CGFloat) -> ThumbnailFlowLayout.CellState {
+		return ThumbnailFlowLayout.CellState(
+			defaultSize: defaultSize,
+			aspectRatio: aspectRatio,
+			indexPath: indexPath,
+			expanding: rate,
+			collapsing: collapsing,
+			deleting: deleting,
+			deletingDirection: deletingDirection)
+	}
+
+	func collapsed(by rate: CGFloat) -> ThumbnailFlowLayout.CellState {
+		return ThumbnailFlowLayout.CellState(
+			defaultSize: defaultSize,
+			aspectRatio: aspectRatio,
+			indexPath: indexPath,
+			expanding: expanding,
+			collapsing: rate,
+			deleting: deleting,
+			deletingDirection: deletingDirection)
+	}
+
+	func aspect(by ratio: CGFloat) -> ThumbnailFlowLayout.CellState {
+		return ThumbnailFlowLayout.CellState(
+			defaultSize: defaultSize,
+			aspectRatio: ratio,
+			indexPath: indexPath,
+			expanding: expanding,
+			collapsing: collapsing,
+			deleting: deleting,
+			deletingDirection: deletingDirection)
+	}
+
+	func deleting(by rate: CGFloat,
+				  with direction: ThumbnailFlowLayout.CellState.Direction) -> ThumbnailFlowLayout.CellState {
+		return ThumbnailFlowLayout.CellState(
+			defaultSize: defaultSize,
+			aspectRatio: aspectRatio,
+			indexPath: indexPath,
+			expanding: expanding,
+			collapsing: collapsing,
+			deleting: rate,
+			deletingDirection: direction)
 	}
 }

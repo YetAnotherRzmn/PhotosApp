@@ -35,9 +35,11 @@ class PhotosViewController: UIViewController {
 
 	@objc func onDelete(sender: UIBarButtonItem) {
 		let index = contentView.indexInFocus
-		contentView.synchronizer.handle(event: .remove(index: IndexPath(row: index, section: 0), completion: {
-			self.dataSource?.images.remove(at: index)
-		}))
+		let event: ScrollSynchronizer.Event = .remove(
+			index: IndexPath(item: index, section: 0),
+			dataSourceUpdate: { self.dataSource?.images.remove(at: index) },
+			completion: nil)
+		contentView.synchronizer.handle(event: event)
 	}
 
 	@objc func onAdd(sender: UIBarButtonItem) {
