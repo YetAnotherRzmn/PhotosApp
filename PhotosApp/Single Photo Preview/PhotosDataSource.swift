@@ -35,10 +35,9 @@ class PhotosDataSource: NSObject {
 	}
 
 	func loadImages() -> [UIImage] {
-		let kek = urls
+		return urls
 			.compactMap{ try? Data(contentsOf: $0) }
 			.compactMap(UIImage.init(data:))
-		return [kek.first!, kek.first!]
 	}
 
 	func randomImage() -> UIImage {

@@ -10,6 +10,20 @@ import UIKit
 
 extension ThumbnailFlowLayout {
 
+	struct PhantomItem {
+		let width: CGFloat
+		let floatIndex: CGFloat // N + 0.5
+
+		func greater(than index: IndexPath) -> Bool {
+			return floatIndex > CGFloat(index.row)
+		}
+
+		func lesser(than index: IndexPath) -> Bool {
+			return CGFloat(index.row) < floatIndex
+		}
+	}
+
+
 	struct Cell: Equatable {
 		let aspectRatio: CGFloat
 		let indexPath: IndexPath
@@ -47,7 +61,8 @@ extension ThumbnailFlowLayout {
 						defaultInset: defaultInset)
 		}
 
-		func update(attributes: UICollectionViewLayoutAttributes, sideCells: [IndexPath: Cell]) {
+		func update(attributes: Attributes, sideCells: [IndexPath: Cell], phantom: PhantomItem? = .none) {
+			attributes.cell = self
 			attributes.size = size
 			attributes.center = center
 
@@ -60,7 +75,15 @@ extension ThumbnailFlowLayout {
 				}
 				return current
 			}
-			attributes.transform = CGAffineTransform(translationX: offset, y: 0)
+			attributes.center.x += offset
+			if let phantom = phantom {
+				if phantom.greater(than: attributes.indexPath) {
+					attributes.center.x -= phantom.width / 2
+				} else {
+					attributes.center.x += phantom.width / 2
+				}
+			}
+			attributes.alpha = (1 - collapsing)
 		}
 
 		var addditionalWidth: CGFloat {

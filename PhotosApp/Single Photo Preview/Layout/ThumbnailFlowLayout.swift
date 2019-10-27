@@ -20,6 +20,10 @@ class ThumbnailFlowLayout: UICollectionViewFlowLayout {
 
 	var updates: [IndexPath: (Cell) -> (Cell)] = [:]
 
+	var phantom: PhantomItem?
+
+	var updating = false
+
 	var sizeForIndex: ((Int) -> CGSize)?
 
 	var currentAttributes: [IndexPath: Attributes]?
@@ -103,6 +107,7 @@ extension ThumbnailFlowLayout {
 	}
 
 	override func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {
+		updating = true
 		print("log: ", #function)
 
 		insertedItems = []
@@ -115,10 +120,13 @@ extension ThumbnailFlowLayout {
 			case .delete:
 				$0.indexPathBeforeUpdate.map{ index in
 					deletedItems?.append(index)
+					updates = [:]
 					updates.removeValue(forKey: index)
 					updates = updates.reduce(into: [:], { dict, item in
 						if item.key < index {
-							dict[item.key] = item.value
+							dict[item.key] = { cell in
+								item.value(cell)
+							}
 						}
 						if item.key > index {
 							dict[IndexPath(row: item.key.row - 1, section: item.key.section)] = { cell in
@@ -131,15 +139,34 @@ extension ThumbnailFlowLayout {
 				break
 			}
 		}
+		phantom = .none
 		super.prepare(forCollectionViewUpdates: updateItems)
 	}
 
 	override func finalizeCollectionViewUpdates() {
 		print("log: ", #function)
-		super.finalizeCollectionViewUpdates()
 
+		guard let deleted = deletedItems?.first else {
+			return
+		}
+		guard let collectionView = collectionView else { return }
+
+		let aspect = sizeForIndex!(deleted.row).aspectRatio
+		let addW = itemSize.height * aspect - itemSize.width
+
+		UIView.animate(withDuration: 0.15) {
+			for cell in collectionView.visibleCells {
+				guard let index = collectionView.indexPath(for: cell) else { continue }
+				if index == deleted {
+					cell.bounds = CGRect(origin: CGPoint(x: 0, y: 0), size: CGSize(width: self.itemSize.width + addW, height: self.itemSize.height))
+					print("!! log: ", cell.layer.animationKeys())
+				}
+			}
+		}
 		insertedItems = .none
 		deletedItems = .none
+		super.finalizeCollectionViewUpdates()
+		updating = false
 	}
 
 	override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
@@ -157,13 +184,23 @@ extension ThumbnailFlowLayout {
 		})
 
 		attrs.forEach {
-			cells[$0.indexPath]?.update(attributes: $0, sideCells: cells)
+			if let phantom = phantom {
+				cells[$0.indexPath]?.update(attributes: $0 as! Attributes, sideCells: [:], phantom: phantom)
+			} else {
+				cells[$0.indexPath]?.update(attributes: $0 as! Attributes, sideCells: cells)
+			}
+
 		}
 		attrs
 			.compactMap{ $0 as? Attributes }
 			.filter{ $0.representedElementCategory == .cell }
 			.forEach{ self.currentAttributes?[$0.indexPath] = $0 }
-		print("log: ", #function)
+		print("========================================")
+		print("phantom is \(phantom != nil ? "not nil" : "nil")")
+		for attr in attrs {
+			print("item \(attr.indexPath.row) \t center \(Int(attr.center.x)) \t width \(Int(attr.size.width))")
+		}
+		print("========================================")
 		return attrs
 	}
 

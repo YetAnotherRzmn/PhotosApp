@@ -103,6 +103,10 @@ extension ScrollSynchronizer {
 	func delete(at indexPath: IndexPath, completion: (() -> ())?) {
 		unbind()
 
+//		let animatedAspect = thumbnails.sizeForIndex?(indexPath.row).aspectRatio ?? 1
+		let nextAspect = thumbnails.sizeForIndex?(indexPath.row).aspectRatio ?? 1
+		let diff = thumbnails.itemSize.height * nextAspect - thumbnails.itemSize.width
+
 		let animator = DefaultProgressAnimator(initial: .zero, onProgress: { current, delta in
 			self.thumbnails.updates = [
 				indexPath: { cell in
@@ -112,6 +116,8 @@ extension ScrollSynchronizer {
 			self.thumbnails.invalidateLayout()
 		})
 		animator.setProgress(progress: 1, duration: 0.15, completion: { _ in
+			self.thumbnails.updates.removeValue(forKey: indexPath)
+			self.thumbnails.phantom = ThumbnailFlowLayout.PhantomItem(width: diff, floatIndex: CGFloat(indexPath.row) + 0.5)
 			completion?()
 			self.thumbnails.collectionView?.deleteItems(at: [indexPath])
 			self.preview.collectionView?.deleteItems(at: [indexPath])
