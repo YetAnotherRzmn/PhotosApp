@@ -14,29 +14,13 @@ class ScrollSynchronizer: NSObject {
 
 	var activeIndex = 0
 
-	init(preview: UICollectionView, thumbnails: UICollectionView, sizeForIndex: ((Int) -> CGSize)?) {
-		guard
-			let previewLayout = preview.collectionViewLayout as? PreviewFlowLayout,
-			let thumbnailLayout = thumbnails.collectionViewLayout as? ThumbnailFlowLayout
-		else { fatalError("unexpected layout") }
-		self.preview = previewLayout
-		self.thumbnails = thumbnailLayout
-
+	init(preview: PreviewFlowLayout, thumbnails: ThumbnailFlowLayout, sizeForIndex: ((Int) -> CGSize)?) {
+		self.preview = preview
+		self.thumbnails = thumbnails
 		self.thumbnails.sizeForIndex = sizeForIndex
-
 		super.init()
 
 		bind()
-	}
-
-	private func bind() {
-		preview.collectionView?.delegate = self
-		thumbnails.collectionView?.delegate = self
-	}
-
-	private func unbind() {
-		preview.collectionView?.delegate = .none
-		thumbnails.collectionView?.delegate = .none
 	}
 
 	func reload() {
@@ -45,6 +29,7 @@ class ScrollSynchronizer: NSObject {
 	}
 }
 
+// MARK: - UICollectionViewDelegate
 extension ScrollSynchronizer: UICollectionViewDelegate {
 
 	func scrollViewDidScroll(_ scrollView: UIScrollView) {
@@ -68,28 +53,39 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
 	}
 
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-		unbind()
-		guard collectionView == thumbnails.collectionView else { return }
+		handle(event: .move(index: indexPath, completion: .none))
+	}
 
-		activeIndex = indexPath.row
-
-		preview.collectionView?.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
-
-		UIView.animate(withDuration: 0.15, animations: { [unowned self] in
-			self.thumbnails.collectionView?.scrollToItem(
-				at: indexPath,
-				at: .centeredHorizontally,
-				animated: false)
-		}) { [unowned self] _ in
-			self.bind()
+	func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+		if scrollView == thumbnails.collectionView {
+			handle(event: .beginScrolling)
 		}
+	}
+
+	func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+		if scrollView == thumbnails.collectionView && !decelerate {
+			thumbnailEndScrolling()
+		}
+	}
+
+	func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+		if scrollView == thumbnails.collectionView {
+			thumbnailEndScrolling()
+		}
+	}
+
+	func thumbnailEndScrolling() {
+		handle(event: .endScrolling)
 	}
 }
 
+// MARK: - event handling
 extension ScrollSynchronizer {
 	enum Event {
 		case remove(index: IndexPath, dataSourceUpdate: () -> (), completion: (() -> ())?)
 		case move(index: IndexPath, completion: (() -> ())?)
+		case beginScrolling
+		case endScrolling
 	}
 
 	func handle(event: Event) {
@@ -98,11 +94,15 @@ extension ScrollSynchronizer {
 			delete(at: index, dataSourceUpdate: update, completion: completion)
 		case .move(let index, let completion):
 			move(to: index, completion: completion)
+		case .endScrolling:
+			endScrolling()
+		case .beginScrolling:
+			beginScrolling()
 		}
 	}
 }
 
-// MARK: -
+// MARK: - event handling impl
 private extension ScrollSynchronizer {
 
 	func delete(
@@ -126,5 +126,30 @@ private extension ScrollSynchronizer {
 		MoveAnimation(thumbnails: thumbnails, preview: preview, index: indexPath).run {
 			self.bind()
 		}
+	}
+
+	func beginScrolling() {
+		ScrollAnimation(thumbnails: thumbnails, preview: preview, type: .beign).run {
+
+		}
+	}
+
+	func endScrolling() {
+		ScrollAnimation(thumbnails: thumbnails, preview: preview, type: .end).run {
+
+		}
+	}
+}
+
+// MARK: - private
+extension ScrollSynchronizer {
+	private func bind() {
+		preview.collectionView?.delegate = self
+		thumbnails.collectionView?.delegate = self
+	}
+
+	private func unbind() {
+		preview.collectionView?.delegate = .none
+		thumbnails.collectionView?.delegate = .none
 	}
 }

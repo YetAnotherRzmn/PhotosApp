@@ -16,6 +16,8 @@ class ThumbnailFlowLayout: UICollectionViewFlowLayout {
 
 	var sizeForIndex: ((Int) -> CGSize)?
 
+	var expandingRate: CGFloat = 1
+
 	override init() {
 		super.init()
 		commonInit()
@@ -162,7 +164,7 @@ private extension ThumbnailFlowLayout {
 		let centerX = attribute.center.x
 		if abs(centerX - offset) < itemSize.width {
 			let expanding = 1 - abs(centerX - offset) / itemSize.width
-			return cell.updated(by: .expand(expanding))
+			return cell.updated(by: .expand(expanding * expandingRate))
 		}
 		return cell
 	}

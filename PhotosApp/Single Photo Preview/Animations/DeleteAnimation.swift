@@ -22,21 +22,21 @@ class DeleteAnimation: NSObject {
 
 	func run(with completion: @escaping () -> ()) {
 
-		let collapse = DefaultProgressAnimator(initial: .zero, onProgress: { current, delta in
+		let collapse = Animator(onProgress: { current, delta in
 			self.collapseItem(at: self.indexPath, with: current)
 		})
 
-		collapse.setProgress(progress: 1, duration: 0.15, completion: { _ in
+		collapse.animate(duration: 0.15) { _ in
 
-			let delete = DefaultProgressAnimator(initial: .zero, onProgress: { current, delta in
+			let delete = Animator(onProgress: { current, delta in
 				self.deleteItem(at: self.indexPath, with: current)
 			})
 
-			delete.setProgress(progress: 1, duration: 0.15) { _ in
+			delete.animate(duration: 0.15) { _ in
 				self.thumbnails.updates = [:]
 				completion()
 			}
-		})
+		}
 	}
 }
 

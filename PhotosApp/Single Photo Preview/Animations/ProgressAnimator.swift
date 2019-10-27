@@ -8,41 +8,7 @@
 
 import UIKit
 
-protocol ProgressAnimator {
-	var progress: CGFloat { get }
-
-	func setProgress(progress: CGFloat, duration: TimeInterval, completion: ((Bool) -> ())?)
-
-	func cancel()
-}
-
-protocol TimingFunction {
-	func apply(value: CGFloat) -> CGFloat
-}
-
-class LinearTimingFunction: TimingFunction {
-	func apply(value: CGFloat) -> CGFloat {
-		return value
-	}
-}
-
-class EaseOutTimingFunction: TimingFunction {
-	func apply(value: CGFloat) -> CGFloat {
-		return value * value
-	}
-}
-
-class EaseInOutTimingFunction: TimingFunction {
-	func apply(value: CGFloat) -> CGFloat {
-		if value < 1 / 2 {
-			return 2 * value * value
-		} else {
-			return (-2 * value * value) + (4 * value) - 1
-		}
-	}
-}
-
-class DefaultProgressAnimator {
+class Animator {
 	var currentProgress: CGFloat = 0
 
 	fileprivate var displayLink: CADisplayLink?
@@ -53,30 +19,27 @@ class DefaultProgressAnimator {
 
 	fileprivate var completion: ((Bool) -> ())?
 	fileprivate let onProgress: (CGFloat, CGFloat) -> ()
-	fileprivate let timing: TimingFunction
+	fileprivate let timing: (CGFloat) -> (CGFloat)
 
-	required init(initial progress: CGFloat,
-				  onProgress: @escaping (CGFloat, CGFloat) -> (),
-				  easing: TimingFunction = LinearTimingFunction()) {
-		self.currentProgress = progress
+	required init(onProgress: @escaping (CGFloat, CGFloat) -> (),
+				  easing: Easing<CGFloat> = .linear) {
+
+		self.currentProgress = .zero
 		self.onProgress = onProgress
-		self.timing = easing
+		self.timing = easing.function
 	}
 }
 
 // MARK ThumbnailFlowLayout.ModeAnimator impl
-extension DefaultProgressAnimator: ProgressAnimator {
-	var progress: CGFloat {
-		return currentProgress
-	}
+extension Animator {
 
-	func setProgress(progress: CGFloat, duration: TimeInterval, completion: ((Bool) -> ())?) {
+	func animate(duration: TimeInterval, completion: ((Bool) -> ())?) {
 		if let _ = displayLink {
 			self.completion?(false)
 		}
 		self.completion = completion
 		fromProgress = currentProgress
-		toProgress = progress
+		toProgress = 1
 		startTimeInterval = CACurrentMediaTime()
 		endTimeInterval = startTimeInterval + duration * TimeInterval(abs(toProgress - fromProgress))
 
@@ -95,17 +58,17 @@ extension DefaultProgressAnimator: ProgressAnimator {
 }
 
 // MARK: - progress updating timer handler
-extension DefaultProgressAnimator {
+extension Animator {
 	@objc func onProgressChanged(link: CADisplayLink) {
 		let currentTime = CACurrentMediaTime()
 		var currentProgress = CGFloat((currentTime - startTimeInterval) / (endTimeInterval - startTimeInterval))
 
 		currentProgress = min(1, currentProgress)
 
-		let tick = timing.apply(value: currentProgress) - timing.apply(value: self.currentProgress)
+		let tick = timing(currentProgress) - timing(self.currentProgress)
 		self.currentProgress = fromProgress + (toProgress - fromProgress) * currentProgress
 
-		onProgress(timing.apply(value: self.currentProgress), tick)
+		onProgress(timing(self.currentProgress), tick)
 
 		if self.currentProgress >= 1 {
 			displayLink?.invalidate()

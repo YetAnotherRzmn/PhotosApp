@@ -96,7 +96,7 @@ private extension ThumbnailFlowLayout.CellState {
 	}
 
 	var size: CGSize {
-		CGSize(width: (defaultSize.width + additionalWidth) * (1 - collapsing),
+		CGSize(width: ceil((defaultSize.width + additionalWidth) * (1 - collapsing)),
 			   height: defaultSize.height * (1 - collapsing))
 	}
 
@@ -109,7 +109,7 @@ private extension ThumbnailFlowLayout.CellState {
 	}
 
 	var center: CGPoint {
-		CGPoint(x: CGFloat(indexPath.row) * (defaultSize.width /*+ defaultInset*/) + defaultSize.width / 2,
+		CGPoint(x: floor(CGFloat(indexPath.row) * (defaultSize.width /*+ defaultInset*/) + defaultSize.width / 2),
 				y: defaultSize.height / 2)
 	}
 }
