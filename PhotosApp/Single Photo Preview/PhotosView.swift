@@ -9,45 +9,73 @@
 import UIKit
 
 class PhotosView: UIView & SnapView {
-	let previewCollection:  UICollectionView
-	let thumbnailCollection: UICollectionView
 
-	init() {
-		previewCollection = UICollectionView(frame: .zero, collectionViewLayout: PreviewFlowLayout())
-		thumbnailCollection = UICollectionView(frame: .zero, collectionViewLayout: ThumbnailFlowLayout())
-		super.init(frame: .zero)
-		setupUI()
-		createConstraints()
-	}
+    let previewCollection: UICollectionView
+    let thumbnailCollection: UICollectionView
+    let synchronizer: ScrollSynchronizer
 
-	required init?(coder: NSCoder) {
-		fatalError("init(coder:) has not been implemented")
-	}
+    let debugCenterLine: UIView
 
-	func setupUI() {
-		addSubview(previewCollection)
-		addSubview(thumbnailCollection)
+    init(sizeForIndex: ((Int) -> CGSize)?) {
+        let previewLayout = PreviewLayout()
+        let thumbnailLayout = ThumbnailLayout()
+        previewCollection = UICollectionView(frame: .zero, collectionViewLayout: previewLayout)
+        thumbnailCollection = UICollectionView(frame: .zero, collectionViewLayout: thumbnailLayout)
+        synchronizer = ScrollSynchronizer(
+            preview: previewLayout,
+            thumbnails: thumbnailLayout,
+            sizeForIndex: sizeForIndex)
+        debugCenterLine = UIView()
+        super.init(frame: .zero)
+        setupUI()
+        createConstraints()
+    }
 
-		previewCollection.isPagingEnabled = true
-		previewCollection.showsVerticalScrollIndicator = false
-		previewCollection.showsHorizontalScrollIndicator = false
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
-		thumbnailCollection.showsVerticalScrollIndicator = false
-		thumbnailCollection.showsHorizontalScrollIndicator = false
-	}
+    func setupUI() {
+        addSubview(previewCollection)
+        addSubview(thumbnailCollection)
+        addSubview(debugCenterLine)
 
-	func createConstraints() {
-		thumbnailCollection.snp.makeConstraints {
-			$0.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin)
-			$0.leading.equalToSuperview()
-			$0.trailing.equalToSuperview()
-			$0.height.equalTo(66)
-		}
-		previewCollection.snp.makeConstraints {
-			$0.top.equalToSuperview()
-			$0.leading.equalToSuperview()
-			$0.trailing.equalToSuperview()
-			$0.bottom.equalTo(thumbnailCollection.snp.top)
-		}
-	}
+        let backgroundColor = UIColor(named: "SinglePhotoBackground")
+
+        debugCenterLine.backgroundColor = .red
+
+        previewCollection.isPagingEnabled = true
+        previewCollection.showsVerticalScrollIndicator = false
+        previewCollection.showsHorizontalScrollIndicator = false
+        previewCollection.backgroundColor = backgroundColor
+
+        thumbnailCollection.showsVerticalScrollIndicator = false
+        thumbnailCollection.showsHorizontalScrollIndicator = false
+        thumbnailCollection.backgroundColor = backgroundColor
+    }
+
+    func createConstraints() {
+        debugCenterLine.snp.makeConstraints {
+            $0.width.equalTo(1)
+            $0.height.equalToSuperview()
+            $0.centerX.equalToSuperview()
+            $0.centerY.equalToSuperview()
+        }
+        thumbnailCollection.snp.makeConstraints {
+            $0.bottom.equalTo(safeAreaLayoutGuide.snp.bottomMargin)
+            $0.leading.equalToSuperview()
+            $0.trailing.equalToSuperview()
+            $0.height.equalTo(66)
+        }
+        previewCollection.snp.makeConstraints {
+            $0.top.equalToSuperview()
+            $0.leading.equalToSuperview()
+            $0.trailing.equalToSuperview()
+            $0.bottom.equalTo(thumbnailCollection.snp.top)
+        }
+    }
+
+    var indexInFocus: Int {
+        return synchronizer.activeIndex
+    }
 }
