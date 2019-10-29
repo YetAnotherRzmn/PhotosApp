@@ -1,4 +1,3 @@
-
 //
 //  CGSize+aspectRatio.swift
 //  PhotosApp
@@ -10,7 +9,7 @@
 import UIKit
 
 extension CGSize {
-	var aspectRatio: CGFloat {
-		return width / height
-	}
+    var aspectRatio: CGFloat {
+        return width / height
+    }
 }

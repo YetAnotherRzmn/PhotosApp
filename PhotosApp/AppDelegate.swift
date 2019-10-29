@@ -14,11 +14,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow? = UIWindow(frame: UIScreen.main.bounds)
 
     func application(_ application: UIApplication,
-					 didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-		let nc = UINavigationController(rootViewController: PhotosViewController())
-		nc.setToolbarHidden(false, animated: false)
-		window?.rootViewController = nc
-		window?.makeKeyAndVisible()
-    	return true
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
+        let controller = UINavigationController(rootViewController: PhotosViewController())
+        controller.setToolbarHidden(false, animated: false)
+        window?.rootViewController = controller
+        window?.makeKeyAndVisible()
+        return true
     }
 }

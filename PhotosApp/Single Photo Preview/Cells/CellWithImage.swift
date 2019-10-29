@@ -9,19 +9,18 @@
 import UIKit
 
 protocol ImageCell: UICollectionViewCell, SnapView {
-	var imageView: UIImageView { get }
+    var imageView: UIImageView { get }
 }
 
 extension ImageCell {
-	func createConstraints() {
-		imageView.snp.makeConstraints {
-			$0.edges.equalToSuperview()
-		}
-	}
+    func createConstraints() {
+        imageView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+    }
 
-	func setupUI() {
-		addSubview(imageView)
-		clipsToBounds = true
-	}
+    func setupUI() {
+        addSubview(imageView)
+        clipsToBounds = true
+    }
 }
-

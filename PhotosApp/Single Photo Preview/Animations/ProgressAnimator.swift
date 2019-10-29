@@ -9,71 +9,71 @@
 import UIKit
 
 class Animator {
-	var currentProgress: CGFloat = 0
+    var currentProgress: CGFloat = 0
 
-	fileprivate var displayLink: CADisplayLink?
-	fileprivate var fromProgress: CGFloat = 0
-	fileprivate var toProgress: CGFloat = 0
-	fileprivate var startTimeInterval: TimeInterval = 0
-	fileprivate var endTimeInterval: TimeInterval = 0
+    fileprivate var displayLink: CADisplayLink?
+    fileprivate var fromProgress: CGFloat = 0
+    fileprivate var toProgress: CGFloat = 0
+    fileprivate var startTimeInterval: TimeInterval = 0
+    fileprivate var endTimeInterval: TimeInterval = 0
 
-	fileprivate var completion: ((Bool) -> ())?
-	fileprivate let onProgress: (CGFloat, CGFloat) -> ()
-	fileprivate let timing: (CGFloat) -> (CGFloat)
+    fileprivate var completion: ((Bool) -> Void)?
+    fileprivate let onProgress: (CGFloat, CGFloat) -> Void
+    fileprivate let timing: (CGFloat) -> (CGFloat)
 
-	required init(onProgress: @escaping (CGFloat, CGFloat) -> (),
-				  easing: Easing<CGFloat> = .linear) {
+    required init(onProgress: @escaping (CGFloat, CGFloat) -> Void,
+                  easing: Easing<CGFloat> = .linear) {
 
-		self.currentProgress = .zero
-		self.onProgress = onProgress
-		self.timing = easing.function
-	}
+        self.currentProgress = .zero
+        self.onProgress = onProgress
+        self.timing = easing.function
+    }
 }
 
-// MARK ThumbnailFlowLayout.ModeAnimator impl
+// MARK: - ThumbnailFlowLayout.ModeAnimator impl
 extension Animator {
 
-	func animate(duration: TimeInterval, completion: ((Bool) -> ())?) {
-		if let _ = displayLink {
-			self.completion?(false)
-		}
-		self.completion = completion
-		fromProgress = currentProgress
-		toProgress = 1
-		startTimeInterval = CACurrentMediaTime()
-		endTimeInterval = startTimeInterval + duration * TimeInterval(abs(toProgress - fromProgress))
+    func animate(duration: TimeInterval, completion: ((Bool) -> Void)?) {
+        if displayLink != nil {
+            self.completion?(false)
+        }
+        self.completion = completion
+        fromProgress = currentProgress
+        toProgress = 1
+        startTimeInterval = CACurrentMediaTime()
+        endTimeInterval = startTimeInterval + duration * TimeInterval(abs(toProgress - fromProgress))
 
-		displayLink?.invalidate()
-		displayLink = CADisplayLink(target: self, selector: #selector(onProgressChanged(link:)))
-		displayLink?.add(to: .main, forMode: .common)
-	}
+        displayLink?.invalidate()
+        displayLink = CADisplayLink(target: self, selector: #selector(onProgressChanged(link:)))
+        displayLink?.add(to: .main, forMode: .common)
+    }
 
-	func cancel() {
-		if let _ = displayLink {
-			self.completion?(false)
-		}
-		displayLink?.invalidate()
-		displayLink = nil
-	}
+    func cancel() {
+        if displayLink != nil {
+            self.completion?(false)
+        }
+        displayLink?.invalidate()
+        displayLink = nil
+    }
 }
 
 // MARK: - progress updating timer handler
 extension Animator {
-	@objc func onProgressChanged(link: CADisplayLink) {
-		let currentTime = CACurrentMediaTime()
-		var currentProgress = CGFloat((currentTime - startTimeInterval) / (endTimeInterval - startTimeInterval))
+    @objc func onProgressChanged(link: CADisplayLink) {
+        let currentTime = CACurrentMediaTime()
+        var currentProgress = CGFloat((currentTime - startTimeInterval) / (endTimeInterval - startTimeInterval))
 
-		currentProgress = min(1, currentProgress)
+        currentProgress = min(1, currentProgress)
 
-		let tick = timing(currentProgress) - timing(self.currentProgress)
-		self.currentProgress = fromProgress + (toProgress - fromProgress) * currentProgress
+        let tick = timing(currentProgress) - timing(self.currentProgress)
+        self.currentProgress = fromProgress + (toProgress - fromProgress) * currentProgress
 
-		onProgress(timing(self.currentProgress), tick)
+        onProgress(timing(self.currentProgress), tick)
 
-		if self.currentProgress >= 1 {
-			displayLink?.invalidate()
-			displayLink = nil
-			completion?(true)
-		}
-	}
+        if self.currentProgress >= 1 {
+            displayLink?.invalidate()
+            displayLink = nil
+            completion?(true)
+        }
+    }
 }

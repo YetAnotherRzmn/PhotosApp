@@ -9,38 +9,38 @@
 import UIKit
 
 class ScrollAnimation: NSObject {
-	let preview: PreviewFlowLayout
-	let thumbnails: ThumbnailFlowLayout
-	let type: Type
-	
-	init(thumbnails: ThumbnailFlowLayout, preview: PreviewFlowLayout, type: Type) {
-		self.preview = preview
-		self.thumbnails = thumbnails
-		self.type = type
-		super.init()
-	}
+    let preview: PreviewLayout
+    let thumbnails: ThumbnailLayout
+    let type: Type
 
-	func run(completion: @escaping () -> ()) {
-		let toValue: CGFloat = self.type == .beign ? 0 : 1
-		let currentExpanding = thumbnails.expandingRate
-		let duration = TimeInterval(0.15 * abs(currentExpanding - toValue))
+    init(thumbnails: ThumbnailLayout, preview: PreviewLayout, type: Type) {
+        self.preview = preview
+        self.thumbnails = thumbnails
+        self.type = type
+        super.init()
+    }
 
-		let animator = Animator(onProgress:  { current, delta in
-			let rate = currentExpanding + (toValue - currentExpanding) * current
-			self.thumbnails.expandingRate = rate
-			self.thumbnails.invalidateLayout()
-		}, easing: .easeInOut)
+    func run(completion: @escaping () -> Void) {
+        let toValue: CGFloat = self.type == .beign ? 0 : 1
+        let currentExpanding = thumbnails.expandingRate
+        let duration = TimeInterval(0.15 * abs(currentExpanding - toValue))
 
-		animator.animate(duration: duration) { _ in
-			completion()
-		}
-	}
+        let animator = Animator(onProgress: { current, _ in
+            let rate = currentExpanding + (toValue - currentExpanding) * current
+            self.thumbnails.expandingRate = rate
+            self.thumbnails.invalidateLayout()
+        }, easing: .easeInOut)
+
+        animator.animate(duration: duration) { _ in
+            completion()
+        }
+    }
 }
 
 extension ScrollAnimation {
 
-	enum `Type` {
-		case beign
-		case end
-	}
+    enum `Type` {
+        case beign
+        case end
+    }
 }
