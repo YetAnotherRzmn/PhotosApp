@@ -45,7 +45,7 @@ private extension DeleteAnimation {
     func collapseItem(at indexPath: IndexPath, with rate: CGFloat) {
         let update: ThumbnailLayout.UpdateType = .collapse(rate)
         let previousUpdate = thumbnails.config.updates[indexPath]
-        thumbnails.config.updates[indexPath] = { update.closure(previousUpdate?($0) ?? $0) }
+        thumbnails.config.updates[indexPath] = update.closure + previousUpdate
         thumbnails.invalidateLayout()
     }
 
@@ -81,9 +81,8 @@ private extension DeleteAnimation {
 
         zip([indexPath, expandingIndexPath], [delete, expand]).forEach { index, update in
             let previousUpdate = thumbnails.config.updates[index]
-            thumbnails.config.updates[index] = { update.closure(previousUpdate?($0) ?? $0) }
+            thumbnails.config.updates[index] = update.closure + previousUpdate
         }
         self.thumbnails.invalidateLayout()
     }
-
 }

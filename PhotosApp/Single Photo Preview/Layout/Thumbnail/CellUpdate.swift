@@ -8,9 +8,14 @@
 
 import UIKit
 
+internal func+<T>(lhs: @escaping (T) -> T,
+                  rhs: ((T) -> T)?) -> (T) -> T {
+    return { lhs(rhs?($0) ?? $0) }
+}
+
 extension ThumbnailLayout {
 
-    typealias CellUpdate = (Cell) -> (Cell)
+    typealias CellUpdate = (Cell) -> Cell
 
     enum UpdateType {
         case expand(CGFloat)

@@ -21,6 +21,7 @@
 		84373F522366108F00A0827E /* MoveAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84373F512366108F00A0827E /* MoveAnimation.swift */; };
 		845A0F252353A166006D36F8 /* ParallaxLayoutAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845A0F242353A166006D36F8 /* ParallaxLayoutAttributes.swift */; };
 		845A0F2723542AD7006D36F8 /* ScrollSynchronizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 845A0F2623542AD7006D36F8 /* ScrollSynchronizer.swift */; };
+		845B45C82369B20300F3E105 /* Require in Frameworks */ = {isa = PBXBuildFile; productRef = 845B45C72369B20300F3E105 /* Require */; };
 		84AEBF7A235CD95600A6EFFB /* ProgressAnimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84AEBF79235CD95600A6EFFB /* ProgressAnimator.swift */; };
 		84E27EF92350D8AE0021A067 /* Data in Resources */ = {isa = PBXBuildFile; fileRef = 84E27EF82350D8AE0021A067 /* Data */; };
 		84E27EFD2351943A0021A067 /* ThumbnailCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84E27EFB2351943A0021A067 /* ThumbnailCollectionViewCell.swift */; };
@@ -68,6 +69,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				845B45C82369B20300F3E105 /* Require in Frameworks */,
 				84E7CF472353851100ED729A /* SnapKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -198,6 +200,7 @@
 			name = PhotosApp;
 			packageProductDependencies = (
 				84E7CF462353851100ED729A /* SnapKit */,
+				845B45C72369B20300F3E105 /* Require */,
 			);
 			productName = PhotosApp;
 			productReference = 35A9E279E7439A92C930C6EA /* PhotosApp.app */;
@@ -228,6 +231,7 @@
 			mainGroup = 35A9E58AD6A40F235487C188;
 			packageReferences = (
 				84E7CF452353851100ED729A /* XCRemoteSwiftPackageReference "SnapKit" */,
+				845B45C62369B20300F3E105 /* XCRemoteSwiftPackageReference "Require" */,
 			);
 			productRefGroup = 35A9ECFFB0E4198F59016042 /* Products */;
 			projectDirPath = "";
@@ -479,6 +483,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		845B45C62369B20300F3E105 /* XCRemoteSwiftPackageReference "Require" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/JohnSundell/Require";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.1;
+			};
+		};
 		84E7CF452353851100ED729A /* XCRemoteSwiftPackageReference "SnapKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SnapKit/SnapKit";
@@ -490,6 +502,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		845B45C72369B20300F3E105 /* Require */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 845B45C62369B20300F3E105 /* XCRemoteSwiftPackageReference "Require" */;
+			productName = Require;
+		};
 		84E7CF462353851100ED729A /* SnapKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 84E7CF452353851100ED729A /* XCRemoteSwiftPackageReference "SnapKit" */;

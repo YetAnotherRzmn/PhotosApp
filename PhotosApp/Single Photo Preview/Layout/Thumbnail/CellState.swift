@@ -60,7 +60,6 @@ extension ThumbnailLayout.Cell {
 
         attributes?.size = size
         attributes?.alpha = 1 - state.collapsing
-
         attributes?.center = center
 
         let translate = sideCells.reduce(0) { (current, cell) -> CGFloat in
@@ -87,6 +86,7 @@ private extension ThumbnailLayout.Cell {
 
     func shift(from direction: ThumbnailLayout.Cell.Direction) -> CGFloat {
         let symmetricShift = additionalWidth / 2 * (1 - state.deleting)
+
         switch direction {
         case .left:
             return symmetricShift

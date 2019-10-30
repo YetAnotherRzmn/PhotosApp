@@ -11,8 +11,8 @@ import UIKit
 class PhotosViewController: UIViewController {
     var dataSource: PhotosDataSource?
 
-    var contentView: PhotosView! {
-        return view as? PhotosView
+    var contentView: PhotosView {
+        return (view as? PhotosView).require()
     }
 
     override func loadView() {
