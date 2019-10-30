@@ -28,23 +28,23 @@ class MoveAnimation: NSObject {
         let fromIndex = IndexPath(row: thumbnails.nearestIndex, section: 0)
 
         preview.collectionView?.scrollToItem(at: indexPath, at: .centeredHorizontally, animated: false)
-        thumbnails.expandingRate = .zero
+        thumbnails.config.expandingRate = .zero
         let animator = Animator(onProgress: { current, _ in
             let offset = fromOffset + (toOffset - fromOffset) * current
             collectionView.contentOffset.x = offset
 
-            self.thumbnails.updates[self.indexPath] = {
+            self.thumbnails.config.updates[self.indexPath] = {
                 $0.updated(by: .expand(current))
             }
-            self.thumbnails.updates[fromIndex] = {
+            self.thumbnails.config.updates[fromIndex] = {
                 $0.updated(by: .expand(1 - current))
             }
         }, easing: .easeInOut)
 
         animator.animate(duration: 0.3) { _ in
-            self.thumbnails.expandingRate = 1
-            self.thumbnails.updates.removeValue(forKey: self.indexPath)
-            self.thumbnails.updates.removeValue(forKey: fromIndex)
+            self.thumbnails.config.expandingRate = 1
+            self.thumbnails.config.updates.removeValue(forKey: self.indexPath)
+            self.thumbnails.config.updates.removeValue(forKey: fromIndex)
             completion()
         }
     }

@@ -14,10 +14,9 @@ class ScrollSynchronizer: NSObject {
 
     var activeIndex = 0
 
-    init(preview: PreviewLayout, thumbnails: ThumbnailLayout, sizeForIndex: ((Int) -> CGSize)?) {
+    init(preview: PreviewLayout, thumbnails: ThumbnailLayout) {
         self.preview = preview
         self.thumbnails = thumbnails
-        self.thumbnails.sizeForIndex = sizeForIndex
         super.init()
         bind()
     }

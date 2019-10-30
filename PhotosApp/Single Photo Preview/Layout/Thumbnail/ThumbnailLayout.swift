@@ -10,27 +10,23 @@ import UIKit
 
 class ThumbnailLayout: UICollectionViewFlowLayout {
 
-    let config = Config()
+    var config: Configuration
 
-    var updates: [IndexPath: CellUpdate] = [:]
+    var dataSource: ((Int) -> CGFloat)!
 
-    var sizeForIndex: ((Int) -> CGSize)?
-
-    var expandingRate: CGFloat = 1
-
-    override init() {
+    init(dataSource: ((Int) -> CGSize)?, config: Configuration = Configuration()) {
+        self.config = config
         super.init()
-        commonInit()
+        self.dataSource = { index in
+            dataSource?(index).aspectRatio ?? self.config.defaultAspectRatio
+        }
+        scrollDirection = .horizontal
+        minimumInteritemSpacing = 0
+        minimumLineSpacing = 0
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
-    }
-
-    func commonInit() {
-        scrollDirection = .horizontal
-        minimumInteritemSpacing = 0
-        minimumLineSpacing = 0
     }
 
     func changeOffset(relative offset: CGFloat) {
@@ -39,18 +35,16 @@ class ThumbnailLayout: UICollectionViewFlowLayout {
     }
 }
 
-extension ThumbnailLayout {
-    struct Config {
-        let aspectRatio: CGFloat = 0.5
-    }
-}
-
 // MARK: - shortcuts
 extension ThumbnailLayout {
 
+    var itemsCount: Int {
+        collectionView?.numberOfItems(inSection: 0) ?? 0
+    }
+
     var farInset: CGFloat {
         guard let collection = collectionView else { return .zero }
-        return (collection.bounds.width - itemSize.width) / 2
+        return (collection.bounds.width - itemSize.width - config.distanceBetween) / 2
     }
 
     var relativeOffset: CGFloat {
@@ -59,11 +53,9 @@ extension ThumbnailLayout {
     }
 
     var nearestIndex: Int {
-        guard let collection = collectionView else { return .zero }
         let offset = relativeOffset
-        let items = collection.numberOfItems(inSection: 0)
-        let floatingIndex = offset * CGFloat(items) + 0.5
-        return max(0, min(Int(floor(floatingIndex)), items - 1))
+        let floatingIndex = offset * CGFloat(itemsCount) + 0.5
+        return max(0, min(Int(floor(floatingIndex)), itemsCount - 1))
     }
 }
 
@@ -73,7 +65,7 @@ extension ThumbnailLayout {
     override func prepare() {
         if let collectionView = collectionView {
             let heigth = collectionView.bounds.height
-            let size = CGSize(width: heigth * config.aspectRatio, height: heigth)
+            let size = CGSize(width: heigth * config.defaultAspectRatio, height: heigth)
             if size != itemSize {
                 itemSize = size
                 collectionView.contentInset = UIEdgeInsets(top: 0, left: farInset, bottom: 0, right: farInset)
@@ -95,14 +87,13 @@ extension ThumbnailLayout {
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
 
         guard let collectionView = collectionView else { return nil }
-        let items = collectionView.numberOfItems(inSection: 0)
         let offset = collectionView.contentOffset.x + collectionView.bounds.width / 2
 
-        let cells = (0 ..< items)
+        let cells = (0 ..< itemsCount)
             .map { IndexPath(row: $0, section: 0) }
             .map { cell(for: $0, offset: offset) }
-            .map { cell -> ThumbnailLayout.CellState in
-                if let update = self.updates[cell.indexPath] {
+            .map { cell -> Cell in
+                if let update = self.config.updates[cell.indexPath] {
                     return update(cell)
                 }
                 return cell
@@ -119,10 +110,10 @@ extension ThumbnailLayout {
             return super.targetContentOffset(forProposedContentOffset: proposedContentOffset,
                                              withScrollingVelocity: velocity)
         }
-        let cellWithSpacing = itemSize.width + minimumInteritemSpacing
+        let cellWithSpacing = itemSize.width + config.distanceBetween
         let relative = (proposedContentOffset.x + collection.contentInset.left) / cellWithSpacing
         let leftIndex = max(0, Int(floor(relative)))
-        let rightIndex = min(Int(ceil(relative)), collection.numberOfItems(inSection: 0))
+        let rightIndex = min(Int(ceil(relative)), itemsCount)
         let leftCenter = CGFloat(leftIndex) * cellWithSpacing - collection.contentInset.left
         let rightCenter = CGFloat(rightIndex) * cellWithSpacing - collection.contentInset.left
 
@@ -138,9 +129,7 @@ extension ThumbnailLayout {
     }
 
     override var collectionViewContentSize: CGSize {
-        guard let collection = collectionView else { return super.collectionViewContentSize }
-        let items = CGFloat(collection.numberOfItems(inSection: 0))
-        let width = items * itemSize.width + (items - 1) * minimumInteritemSpacing
+        let width = CGFloat(itemsCount) * itemSize.width + CGFloat(itemsCount - 1) * config.distanceBetween
         return CGSize(width: width, height: itemSize.height)
     }
 }
@@ -148,23 +137,24 @@ extension ThumbnailLayout {
 // MARK: - private
 private extension ThumbnailLayout {
 
-    func cell(for index: IndexPath, offset: CGFloat) -> CellState {
+    func cell(for index: IndexPath, offset: CGFloat) -> Cell {
 
-        let cell = CellState(
-            defaultSize: itemSize,
-            aspectRatio: sizeForIndex?(index.row).aspectRatio ?? 1.5,
+        let cell = Cell(
             indexPath: index,
-            expanding: .zero,
-            collapsing: .zero,
-            deleting: .zero,
-            deletingDirection: .left)
+            dims: Cell.Dimensions(
+                defaultSize: itemSize,
+                aspectRatio: dataSource(index.row),
+                inset: config.distanceBetween,
+                insetAsExpanded: config.distanceBetweenFocused),
+            state: .default)
 
         guard let attribute = cell.attributes(from: self, with: []) else { return cell }
 
         let centerX = attribute.center.x
-        if abs(centerX - offset) < itemSize.width {
-            let expanding = 1 - abs(centerX - offset) / itemSize.width
-            return cell.updated(by: .expand(expanding * expandingRate))
+        let widthWithOffset = itemSize.width + config.distanceBetween
+        if abs(centerX - offset) < widthWithOffset {
+            let expanding = 1 - abs(centerX - offset) / widthWithOffset
+            return cell.updated(by: .expand(expanding * config.expandingRate))
         }
         return cell
     }

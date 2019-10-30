@@ -18,13 +18,12 @@ class PhotosView: UIView & SnapView {
 
     init(sizeForIndex: ((Int) -> CGSize)?) {
         let previewLayout = PreviewLayout()
-        let thumbnailLayout = ThumbnailLayout()
+        let thumbnailLayout = ThumbnailLayout(dataSource: sizeForIndex)
         previewCollection = UICollectionView(frame: .zero, collectionViewLayout: previewLayout)
         thumbnailCollection = UICollectionView(frame: .zero, collectionViewLayout: thumbnailLayout)
         synchronizer = ScrollSynchronizer(
             preview: previewLayout,
-            thumbnails: thumbnailLayout,
-            sizeForIndex: sizeForIndex)
+            thumbnails: thumbnailLayout)
         debugCenterLine = UIView()
         super.init(frame: .zero)
         setupUI()
