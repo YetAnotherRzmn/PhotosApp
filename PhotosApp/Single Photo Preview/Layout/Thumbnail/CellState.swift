@@ -85,7 +85,7 @@ private extension ThumbnailLayout.Cell {
     }
 
     func shift(from direction: ThumbnailLayout.Cell.Direction) -> CGFloat {
-        let symmetricShift = additionalWidth / 2 * (1 - state.deleting)
+        let symmetricShift = (additionalWidth + dims.insetAsExpanded * state.expanding) / 2 * (1 - state.deleting)
 
         switch direction {
         case .left:
