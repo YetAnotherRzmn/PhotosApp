@@ -8,16 +8,30 @@
 
 import UIKit
 
+enum InteractionState {
+    case enabled
+    case disabled
+}
+
+protocol LayoutChangeHandler {
+    var needsUpdateOffset: Bool { get }
+    var targetIndex: Int { get }
+    var interactionState: InteractionState { get set }
+}
+
 class ScrollSynchronizer: NSObject {
     let preview: PreviewLayout
     let thumbnails: ThumbnailLayout
 
     var activeIndex = 0
+    var interactionStateInternal: InteractionState = .disabled
 
     init(preview: PreviewLayout, thumbnails: ThumbnailLayout) {
         self.preview = preview
         self.thumbnails = thumbnails
         super.init()
+        self.thumbnails.layoutHandler = self
+        self.preview.layoutHandler = self
         bind()
     }
 
@@ -140,6 +154,32 @@ private extension ScrollSynchronizer {
         ScrollAnimation(thumbnails: thumbnails, preview: preview, type: .end).run {
 
         }
+    }
+}
+
+// MARK: - layout changes
+extension ScrollSynchronizer: LayoutChangeHandler {
+    var interactionState: InteractionState {
+        get {
+            interactionStateInternal
+        }
+        set(value) {
+            switch value {
+            case .enabled:
+                bind()
+            case .disabled:
+                unbind()
+            }
+            interactionStateInternal = value
+        }
+    }
+
+    var needsUpdateOffset: Bool {
+        interactionState == .disabled
+    }
+
+    var targetIndex: Int {
+        activeIndex
     }
 }
 

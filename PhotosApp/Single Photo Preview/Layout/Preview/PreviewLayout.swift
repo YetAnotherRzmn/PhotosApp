@@ -11,6 +11,7 @@ import UIKit
 class PreviewLayout: UICollectionViewFlowLayout {
 
     let offsetBetweenCells: CGFloat = 44
+    var layoutHandler: LayoutChangeHandler?
 
     override init() {
         super.init()
@@ -40,11 +41,15 @@ extension PreviewLayout {
     }
 
     override func prepare() {
-        if let collectionView = collectionView {
+        if let collectionView = collectionView, let layoutHandler = layoutHandler {
             let size = collectionView.bounds.size
             if size != itemSize {
                 itemSize = size
                 invalidateLayout()
+            }
+            if layoutHandler.needsUpdateOffset {
+                let offset = collectionView.contentOffset
+                collectionView.contentOffset = targetContentOffset(forProposedContentOffset: offset)
             }
         }
         super.prepare()
@@ -72,5 +77,15 @@ extension PreviewLayout {
             attributes.transform = CGAffineTransform(translationX: relativeDistanceToCenter * offsetBetweenCells, y: 0)
         }
         return attributes
+    }
+
+    override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+        let targetOffset = super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
+        guard let layoutHandler = layoutHandler else {
+            return targetOffset
+        }
+        return CGPoint(
+            x: CGFloat(layoutHandler.targetIndex) * itemSize.width,
+            y: targetOffset.y)
     }
 }

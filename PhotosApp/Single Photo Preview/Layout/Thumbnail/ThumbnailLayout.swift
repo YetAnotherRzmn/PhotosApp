@@ -14,6 +14,9 @@ class ThumbnailLayout: UICollectionViewFlowLayout {
 
     var dataSource: ((Int) -> CGFloat)!
 
+    var layoutHandler: LayoutChangeHandler?
+    var activeIndex: (() -> Int)!
+
     init(dataSource: ((Int) -> CGSize)?, config: Configuration = Configuration()) {
         self.config = config
         super.init()
@@ -30,8 +33,7 @@ class ThumbnailLayout: UICollectionViewFlowLayout {
     }
 
     func changeOffset(relative offset: CGFloat) {
-        let inset = collectionView?.contentInset.left ?? .zero
-        collectionView?.contentOffset.x = collectionViewContentSize.width * offset - inset
+        collectionView?.contentOffset.x = collectionViewContentSize.width * offset - farInset
     }
 }
 
@@ -63,12 +65,16 @@ extension ThumbnailLayout {
 extension ThumbnailLayout {
 
     override func prepare() {
-        if let collectionView = collectionView {
+        if let collectionView = collectionView, let layoutHandler = layoutHandler {
             let heigth = collectionView.bounds.height
             let size = CGSize(width: heigth * config.defaultAspectRatio, height: heigth)
             if size != itemSize {
                 itemSize = size
                 collectionView.contentInset = UIEdgeInsets(top: 0, left: farInset, bottom: 0, right: farInset)
+            }
+            if layoutHandler.needsUpdateOffset {
+                let offset = collectionView.contentOffset
+                collectionView.contentOffset = targetContentOffset(forProposedContentOffset: offset)
             }
         }
         super.prepare()
@@ -122,6 +128,17 @@ extension ThumbnailLayout {
         } else {
             return CGPoint(x: rightCenter, y: proposedContentOffset.y)
         }
+    }
+
+    override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
+        let targetOffset = super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
+        guard let layoutHandler = layoutHandler else {
+            return targetOffset
+        }
+        let offset: CGFloat = CGFloat(layoutHandler.targetIndex) / CGFloat(itemsCount)
+        return CGPoint(
+            x: collectionViewContentSize.width * offset - farInset,
+            y: targetOffset.y)
     }
 
     override func shouldInvalidateLayout(forBoundsChange newBounds: CGRect) -> Bool {
