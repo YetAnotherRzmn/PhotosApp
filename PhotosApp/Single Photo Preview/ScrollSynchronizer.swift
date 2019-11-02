@@ -14,10 +14,9 @@ class ScrollSynchronizer: NSObject {
 
     var activeIndex = 0
 
-    init(preview: PreviewLayout, thumbnails: ThumbnailLayout, sizeForIndex: ((Int) -> CGSize)?) {
+    init(preview: PreviewLayout, thumbnails: ThumbnailLayout) {
         self.preview = preview
         self.thumbnails = thumbnails
-        self.thumbnails.sizeForIndex = sizeForIndex
         super.init()
         bind()
     }
@@ -41,6 +40,7 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
             activeIndex = thumbnails.nearestIndex
         }
         if scrollView == thumbnails.collectionView {
+            print(thumbnails.relativeOffset)
             let index = thumbnails.nearestIndex
             if index != activeIndex {
                 activeIndex = index
@@ -52,7 +52,10 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        handle(event: .move(index: indexPath, completion: .none))
+        if activeIndex != indexPath.row {
+            activeIndex = indexPath.row
+            handle(event: .move(index: indexPath, completion: .none))
+        }
     }
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {

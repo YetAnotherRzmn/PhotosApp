@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Require
 
 class PhotosDataSource: NSObject {
 
@@ -22,16 +23,20 @@ class PhotosDataSource: NSObject {
         super.init()
 
         preview.dataSource = self
-        preview.register(PreviewCollectionViewCell.self,
-                         forCellWithReuseIdentifier: PreviewCollectionViewCell.reuseId)
+        preview.register(
+            PreviewCollectionViewCell.self,
+            forCellWithReuseIdentifier: PreviewCollectionViewCell.reuseId)
 
         thumbnails.dataSource = self
-        thumbnails.register(ThumbnailCollectionViewCell.self,
-                            forCellWithReuseIdentifier: ThumbnailCollectionViewCell.reuseId)
+        thumbnails.register(
+            ThumbnailCollectionViewCell.self,
+            forCellWithReuseIdentifier: ThumbnailCollectionViewCell.reuseId)
     }
 
     var urls: [URL] {
-        Bundle.main.urls(forResourcesWithExtension: .none, subdirectory: "Data")!
+        Bundle.main.urls(
+            forResourcesWithExtension: .none,
+            subdirectory: "Data").require(hint: "No test data found.")
     }
 
     func loadImages() -> [UIImage] {
@@ -41,7 +46,7 @@ class PhotosDataSource: NSObject {
     }
 
     func randomImage() -> UIImage {
-        return Set(loadImages()).randomElement()!
+        return Set(loadImages()).randomElement().require(hint: "No test data found.")
     }
 }
 
@@ -60,13 +65,12 @@ extension PhotosDataSource: UICollectionViewDataSource {
             reuseId = ThumbnailCollectionViewCell.reuseId
         }
         let cell = reuseId.flatMap {
-            collectionView.dequeueReusableCell(withReuseIdentifier: $0, for: indexPath)
+            collectionView.dequeueReusableCell(
+                withReuseIdentifier: $0,
+                for: indexPath) as? ImageCell
         }
-        guard let imageCell = cell as? ImageCell else {
-            fatalError("Unexpected cell type.")
-        }
-        imageCell.imageView.image = images[indexPath.row]
-        return imageCell
+        cell?.imageView.image = images[indexPath.row]
+        return cell.require(hint: "Unexpected cell type.")
     }
 
 }

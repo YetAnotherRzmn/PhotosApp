@@ -9,6 +9,19 @@
 import UIKit
 
 extension ThumbnailLayout {
+    struct Cell {
+        let indexPath: IndexPath
+
+        let dims: Dimensions
+        let state: State
+
+        func updated(new state: State) -> Cell {
+            return Cell(indexPath: indexPath, dims: dims, state: state)
+        }
+    }
+}
+
+extension ThumbnailLayout.Cell {
 
     enum Direction {
         case left
@@ -19,31 +32,37 @@ extension ThumbnailLayout {
         }
     }
 
-    struct CellState: Equatable {
-
+    struct Dimensions {
         let defaultSize: CGSize
         let aspectRatio: CGFloat
-        let indexPath: IndexPath
+        let inset: CGFloat
+        let insetAsExpanded: CGFloat
+    }
 
+    struct State {
         let expanding: CGFloat
         let collapsing: CGFloat
         let deleting: CGFloat
         let deletingDirection: Direction
+
+        static var `default`: State {
+            State(expanding: .zero, collapsing: .zero, deleting: .zero, deletingDirection: .left)
+        }
     }
 }
 
 // MARK: - layout attributes creation
-extension ThumbnailLayout.CellState {
+extension ThumbnailLayout.Cell {
 
-    func attributes(from layout: UICollectionViewFlowLayout,
-                    with sideCells: [ThumbnailLayout.CellState]) -> UICollectionViewLayoutAttributes? {
+    func attributes(from layout: ThumbnailLayout,
+                    with sideCells: [ThumbnailLayout.Cell]) -> UICollectionViewLayoutAttributes? {
         let attributes = layout.layoutAttributesForItem(at: indexPath)
 
         attributes?.size = size
-        attributes?.alpha = 1 - collapsing
+        attributes?.alpha = 1 - state.collapsing
         attributes?.center = center
 
-        attributes?.center.x += sideCells.reduce(0) { (current, cell) -> CGFloat in
+        let translate = sideCells.reduce(0) { (current, cell) -> CGFloat in
             if indexPath < cell.indexPath {
                 return current - cell.leftShift
             }
@@ -52,42 +71,45 @@ extension ThumbnailLayout.CellState {
             }
             return current
         }
+        attributes?.transform = CGAffineTransform(translationX: translate, y: .zero)
 
         return attributes
     }
 }
 
 // MARK: - geometry utils
-private extension ThumbnailLayout.CellState {
+private extension ThumbnailLayout.Cell {
 
     var additionalWidth: CGFloat {
-        (defaultSize.height * aspectRatio - defaultSize.width) * expanding
+        (dims.defaultSize.height * dims.aspectRatio - dims.defaultSize.width) * state.expanding
     }
 
-    func shift(from direction: ThumbnailLayout.Direction) -> CGFloat {
+    func shift(from direction: ThumbnailLayout.Cell.Direction) -> CGFloat {
+        let symmetricShift = (additionalWidth + dims.insetAsExpanded * state.expanding) / 2 * (1 - state.deleting)
+
         switch direction {
         case .left:
-            return additionalWidth / 2 * (1 - deleting)
+            return symmetricShift
         case .right:
-            return additionalWidth / 2 * (1 - deleting) - defaultSize.width * deleting
+            return symmetricShift - dims.defaultSize.width * state.deleting
         }
     }
 
     var size: CGSize {
-        CGSize(width: ceil((defaultSize.width + additionalWidth) * (1 - collapsing)),
-               height: defaultSize.height * (1 - collapsing))
+        CGSize(width: ceil((dims.defaultSize.width + additionalWidth) * (1 - state.collapsing)),
+               height: dims.defaultSize.height * (1 - state.collapsing))
     }
 
     var leftShift: CGFloat {
-        shift(from: deletingDirection.inversed)
+        shift(from: state.deletingDirection.inversed)
     }
 
     var rightShift: CGFloat {
-        shift(from: deletingDirection)
+        shift(from: state.deletingDirection)
     }
 
     var center: CGPoint {
-        CGPoint(x: floor(CGFloat(indexPath.row) * (defaultSize.width /*+ defaultInset*/) + defaultSize.width / 2),
-                y: defaultSize.height / 2)
+        CGPoint(x: CGFloat(indexPath.row) * (dims.defaultSize.width + dims.inset) + dims.defaultSize.width / 2,
+                y: dims.defaultSize.height / 2)
     }
 }

@@ -22,12 +22,12 @@ class ScrollAnimation: NSObject {
 
     func run(completion: @escaping () -> Void) {
         let toValue: CGFloat = self.type == .beign ? 0 : 1
-        let currentExpanding = thumbnails.expandingRate
+        let currentExpanding = thumbnails.config.expandingRate
         let duration = TimeInterval(0.15 * abs(currentExpanding - toValue))
 
         let animator = Animator(onProgress: { current, _ in
             let rate = currentExpanding + (toValue - currentExpanding) * current
-            self.thumbnails.expandingRate = rate
+            self.thumbnails.config.expandingRate = rate
             self.thumbnails.invalidateLayout()
         }, easing: .easeInOut)
 

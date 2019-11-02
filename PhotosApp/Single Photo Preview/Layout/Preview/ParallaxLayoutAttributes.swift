@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Require
 
 class ParallaxLayoutAttributes: UICollectionViewLayoutAttributes {
     var parallaxValue: CGFloat?
@@ -16,11 +17,9 @@ class ParallaxLayoutAttributes: UICollectionViewLayoutAttributes {
 extension ParallaxLayoutAttributes {
 
     override func copy(with zone: NSZone? = nil) -> Any {
-        guard let copy = super.copy(with: zone) as? ParallaxLayoutAttributes else {
-            fatalError("unexpected copy type")
-        }
-        copy.parallaxValue = self.parallaxValue
-        return copy
+        let copy = super.copy(with: zone) as? ParallaxLayoutAttributes
+        copy?.parallaxValue = self.parallaxValue
+        return copy.require(hint: "Unexpected copy type.")
     }
 
     override func isEqual(_ object: Any?) -> Bool {

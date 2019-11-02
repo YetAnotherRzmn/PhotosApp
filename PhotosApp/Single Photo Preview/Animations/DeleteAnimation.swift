@@ -33,7 +33,7 @@ class DeleteAnimation: NSObject {
             })
 
             delete.animate(duration: 0.15) { _ in
-                self.thumbnails.updates = [:]
+                self.thumbnails.config.updates = [:]
                 completion()
             }
         }
@@ -44,15 +44,15 @@ private extension DeleteAnimation {
 
     func collapseItem(at indexPath: IndexPath, with rate: CGFloat) {
         let update: ThumbnailLayout.UpdateType = .collapse(rate)
-        let previousUpdate = self.thumbnails.updates[indexPath]
-        self.thumbnails.updates[indexPath] = { update.closure(previousUpdate?($0) ?? $0) }
-        self.thumbnails.invalidateLayout()
+        let previousUpdate = thumbnails.config.updates[indexPath]
+        thumbnails.config.updates[indexPath] = update.closure + previousUpdate
+        thumbnails.invalidateLayout()
     }
 
     func deleteItem(at indexPath: IndexPath, with rate: CGFloat) {
         guard let collectionView = thumbnails.collectionView else { return }
 
-        let direction = { () -> ThumbnailLayout.Direction in
+        let direction = { () -> ThumbnailLayout.Cell.Direction in
             if indexPath.row + 1 >= collectionView.numberOfItems(inSection: 0) {
                 return .left
             } else {
@@ -74,16 +74,15 @@ private extension DeleteAnimation {
     func deleteItem(at indexPath: IndexPath,
                     with rate: CGFloat,
                     expandingIndexPath: IndexPath,
-                    animationDirection: ThumbnailLayout.Direction) {
+                    animationDirection: ThumbnailLayout.Cell.Direction) {
 
         let delete: ThumbnailLayout.UpdateType = .delete(rate, animationDirection)
         let expand: ThumbnailLayout.UpdateType = .expand(rate)
 
         zip([indexPath, expandingIndexPath], [delete, expand]).forEach { index, update in
-            let previousUpdate = self.thumbnails.updates[index]
-            self.thumbnails.updates[index] = { update.closure(previousUpdate?($0) ?? $0) }
+            let previousUpdate = thumbnails.config.updates[index]
+            thumbnails.config.updates[index] = update.closure + previousUpdate
         }
         self.thumbnails.invalidateLayout()
     }
-
 }
