@@ -35,15 +35,16 @@ class PhotosViewController: UIViewController {
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        contentView.synchronizer.interactionState = .enabled
+        contentView.synchronizer.layoutState = .ready
     }
 
     override func viewDidDisappear(_ animated: Bool) {
         super.viewDidDisappear(animated)
-        contentView.synchronizer.interactionState = .disabled
+        contentView.synchronizer.layoutState = .configuring
     }
 
     @objc func onDelete(sender: UIBarButtonItem) {
+        guard contentView.synchronizer.interactionState == .enabled else { return }
         let index = contentView.indexInFocus
         let event: ScrollSynchronizer.Event = .remove(
             index: IndexPath(item: index, section: 0),

@@ -81,7 +81,7 @@ extension PreviewLayout {
 
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint) -> CGPoint {
         let targetOffset = super.targetContentOffset(forProposedContentOffset: proposedContentOffset)
-        guard let layoutHandler = layoutHandler else {
+        guard let layoutHandler = layoutHandler, layoutHandler.needsUpdateOffset else {
             return targetOffset
         }
         return CGPoint(

@@ -13,10 +13,15 @@ enum InteractionState {
     case disabled
 }
 
+enum LayoutState {
+    case ready
+    case configuring
+}
+
 protocol LayoutChangeHandler {
     var needsUpdateOffset: Bool { get }
     var targetIndex: Int { get }
-    var interactionState: InteractionState { get set }
+    var layoutState: LayoutState { get set }
 }
 
 class ScrollSynchronizer: NSObject {
@@ -24,7 +29,8 @@ class ScrollSynchronizer: NSObject {
     let thumbnails: ThumbnailLayout
 
     var activeIndex = 0
-    var interactionStateInternal: InteractionState = .disabled
+    var layoutStateInternal: LayoutState = .configuring
+    var interactionState: InteractionState = .enabled
 
     init(preview: PreviewLayout, thumbnails: ThumbnailLayout) {
         self.preview = preview
@@ -127,11 +133,18 @@ private extension ScrollSynchronizer {
         completion: (() -> Void)?) {
 
         unbind()
+        interactionState = .disabled
         DeleteAnimation(thumbnails: thumbnails, preview: preview, index: indexPath).run {
+            let previousCount = self.thumbnails.itemsCount
+            if previousCount == indexPath.row + 1 {
+                self.activeIndex = previousCount - 1
+            }
             dataSourceUpdate()
             self.thumbnails.collectionView?.deleteItems(at: [indexPath])
             self.preview.collectionView?.deleteItems(at: [indexPath])
+            print("removed \(indexPath)")
             self.bind()
+            self.interactionState = .enabled
             completion?()
         }
     }
@@ -139,12 +152,15 @@ private extension ScrollSynchronizer {
     func move(to indexPath: IndexPath, completion: (() -> Void)?) {
 
         unbind()
+        interactionState = .disabled
         MoveAnimation(thumbnails: thumbnails, preview: preview, index: indexPath).run {
+            self.interactionState = .enabled
             self.bind()
         }
     }
 
     func beginScrolling() {
+        interactionState = .disabled
         ScrollAnimation(thumbnails: thumbnails, preview: preview, type: .beign).run {
 
         }
@@ -152,30 +168,30 @@ private extension ScrollSynchronizer {
 
     func endScrolling() {
         ScrollAnimation(thumbnails: thumbnails, preview: preview, type: .end).run {
-
+            self.interactionState = .enabled
         }
     }
 }
 
 // MARK: - layout changes
 extension ScrollSynchronizer: LayoutChangeHandler {
-    var interactionState: InteractionState {
+    var layoutState: LayoutState {
         get {
-            interactionStateInternal
+            layoutStateInternal
         }
         set(value) {
             switch value {
-            case .enabled:
+            case .ready:
                 bind()
-            case .disabled:
+            case .configuring:
                 unbind()
             }
-            interactionStateInternal = value
+            layoutStateInternal = value
         }
     }
 
     var needsUpdateOffset: Bool {
-        interactionState == .disabled
+        layoutState == .configuring
     }
 
     var targetIndex: Int {

@@ -24,7 +24,8 @@ class MoveAnimation: NSObject {
         guard let collectionView = thumbnails.collectionView else { return }
         let fromOffset = collectionView.contentOffset.x
         let floatIndex = CGFloat(indexPath.row)
-        let toOffset = floatIndex * (thumbnails.itemSize.width + thumbnails.config.distanceBetween) - thumbnails.farInset
+        let cellWithInsetsWidth = thumbnails.itemSize.width + thumbnails.config.distanceBetween
+        let toOffset = floatIndex * cellWithInsetsWidth - thumbnails.farInset
 
         let fromIndex = IndexPath(row: thumbnails.nearestIndex, section: 0)
 
