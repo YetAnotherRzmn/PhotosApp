@@ -66,15 +66,13 @@ extension ThumbnailLayout {
 
     override func prepare() {
         if let collectionView = collectionView, let layoutHandler = layoutHandler {
-            let heigth = collectionView.bounds.height
-            let size = CGSize(width: heigth * config.defaultAspectRatio, height: heigth)
-            if size != itemSize {
-                itemSize = size
-                collectionView.contentInset = UIEdgeInsets(top: 0, left: farInset, bottom: 0, right: farInset)
-            }
             if layoutHandler.needsUpdateOffset {
+                let heigth = collectionView.bounds.height
+                let size = CGSize(width: heigth * config.defaultAspectRatio, height: heigth)
+                itemSize = size
                 let offset = collectionView.contentOffset
                 collectionView.contentOffset = targetContentOffset(forProposedContentOffset: offset)
+                collectionView.contentInset = UIEdgeInsets(top: 0, left: farInset, bottom: 0, right: farInset)
             }
         }
         super.prepare()
