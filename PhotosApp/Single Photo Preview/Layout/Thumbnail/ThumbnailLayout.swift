@@ -11,18 +11,15 @@ import UIKit
 class ThumbnailLayout: UICollectionViewFlowLayout {
 
     var config: Configuration
-
-    var dataSource: ((Int) -> CGFloat)!
-
+    var dataSource: ((Int) -> CGFloat)
     var layoutHandler: LayoutChangeHandler?
-    var activeIndex: (() -> Int)!
 
     init(dataSource: ((Int) -> CGSize)?, config: Configuration = Configuration()) {
         self.config = config
-        super.init()
         self.dataSource = { index in
-            dataSource?(index).aspectRatio ?? self.config.defaultAspectRatio
+            dataSource?(index).aspectRatio ?? config.defaultAspectRatio
         }
+        super.init()
         scrollDirection = .horizontal
         minimumInteritemSpacing = 0
         minimumLineSpacing = 0
@@ -42,6 +39,18 @@ extension ThumbnailLayout {
 
     var itemsCount: Int {
         collectionView?.numberOfItems(inSection: 0) ?? 0
+    }
+
+    var offset: CGPoint {
+        collectionView?.contentOffset ?? .zero
+    }
+
+    var offsetWithoutInsets: CGPoint {
+        CGPoint(x: offset.x + farInset, y: offset.y)
+    }
+
+    var insets: UIEdgeInsets {
+        UIEdgeInsets(top: .zero, left: farInset, bottom: .zero, right: farInset)
     }
 
     var farInset: CGFloat {
@@ -67,12 +76,12 @@ extension ThumbnailLayout {
     override func prepare() {
         if let collectionView = collectionView, let layoutHandler = layoutHandler {
             if layoutHandler.needsUpdateOffset {
-                let heigth = collectionView.bounds.height
-                let size = CGSize(width: heigth * config.defaultAspectRatio, height: heigth)
+                let size = CGSize(
+                    width: collectionView.bounds.height * config.defaultAspectRatio,
+                    height: collectionView.bounds.height)
                 itemSize = size
-                let offset = collectionView.contentOffset
                 collectionView.contentOffset = targetContentOffset(forProposedContentOffset: offset)
-                collectionView.contentInset = UIEdgeInsets(top: 0, left: farInset, bottom: 0, right: farInset)
+                collectionView.contentInset = insets
             }
         }
         super.prepare()
@@ -90,22 +99,16 @@ extension ThumbnailLayout {
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
 
-        guard let collectionView = collectionView else { return nil }
-        let offset = collectionView.contentOffset.x + farInset
-
         let cells = (0 ..< itemsCount)
             .map { IndexPath(row: $0, section: 0) }
-            .map { cell(for: $0, offset: offset) }
+            .map { cell(for: $0, offsetX: offsetWithoutInsets.x) }
             .map { cell -> Cell in
                 if let update = self.config.updates[cell.indexPath] {
                     return update(cell)
                 }
                 return cell
         }
-
-        let attrs = cells.compactMap { $0.attributes(from: self, with: cells) }
-
-        return attrs
+        return cells.compactMap { $0.attributes(from: self, with: cells) }
     }
 
     override func targetContentOffset(forProposedContentOffset proposedContentOffset: CGPoint,
@@ -116,10 +119,10 @@ extension ThumbnailLayout {
         }
         let cellWithSpacing = itemSize.width + config.distanceBetween
         let relative = (proposedContentOffset.x + collection.contentInset.left) / cellWithSpacing
-        let leftIndex = max(0, Int(floor(relative)))
-        let rightIndex = min(Int(ceil(relative)), itemsCount)
-        let leftCenter = CGFloat(leftIndex) * cellWithSpacing - collection.contentInset.left
-        let rightCenter = CGFloat(rightIndex) * cellWithSpacing - collection.contentInset.left
+        let leftIndex = max(0, floor(relative))
+        let rightIndex = min(ceil(relative), CGFloat(itemsCount))
+        let leftCenter = leftIndex * cellWithSpacing - collection.contentInset.left
+        let rightCenter = rightIndex * cellWithSpacing - collection.contentInset.left
 
         if abs(leftCenter - proposedContentOffset.x) < abs(rightCenter - proposedContentOffset.x) {
             return CGPoint(x: leftCenter, y: proposedContentOffset.y)
@@ -133,7 +136,7 @@ extension ThumbnailLayout {
         guard let layoutHandler = layoutHandler else {
             return targetOffset
         }
-        let offset: CGFloat = CGFloat(layoutHandler.targetIndex) / CGFloat(itemsCount)
+        let offset = CGFloat(layoutHandler.targetIndex) / CGFloat(itemsCount)
         return CGPoint(
             x: collectionViewContentSize.width * offset - farInset,
             y: targetOffset.y)
@@ -152,7 +155,7 @@ extension ThumbnailLayout {
 // MARK: - private
 private extension ThumbnailLayout {
 
-    func cell(for index: IndexPath, offset: CGFloat) -> Cell {
+    func cell(for index: IndexPath, offsetX: CGFloat) -> Cell {
 
         let cell = Cell(
             indexPath: index,
@@ -167,8 +170,8 @@ private extension ThumbnailLayout {
 
         let cellOffset = attribute.center.x - itemSize.width / 2
         let widthWithOffset = itemSize.width + config.distanceBetween
-        if abs(cellOffset - offset) < widthWithOffset {
-            let expanding = 1 - abs(cellOffset - offset) / widthWithOffset
+        if abs(cellOffset - offsetX) < widthWithOffset {
+            let expanding = 1 - abs(cellOffset - offsetX) / widthWithOffset
             return cell.updated(by: .expand(expanding * config.expandingRate))
         }
         return cell
