@@ -17,8 +17,6 @@ class ThumbnailLayout: UICollectionViewFlowLayout {
     var layoutHandler: LayoutChangeHandler?
     var activeIndex: (() -> Int)!
 
-    var containerSize: CGSize = .zero
-
     init(dataSource: ((Int) -> CGSize)?, config: Configuration = Configuration()) {
         self.config = config
         super.init()
