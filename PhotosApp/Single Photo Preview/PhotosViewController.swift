@@ -33,6 +33,16 @@ class PhotosViewController: UIViewController {
         ]
     }
 
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        contentView.synchronizer.interactionState = .enabled
+    }
+
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        contentView.synchronizer.interactionState = .disabled
+    }
+
     @objc func onDelete(sender: UIBarButtonItem) {
         let index = contentView.indexInFocus
         let event: ScrollSynchronizer.Event = .remove(
@@ -46,6 +56,17 @@ class PhotosViewController: UIViewController {
         if let dataSource = dataSource {
             dataSource.images.append(dataSource.randomImage())
             contentView.synchronizer.reload()
+        }
+    }
+}
+
+// MARK: orientation changes
+extension PhotosViewController {
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        contentView.synchronizer.interactionState = .disabled
+        coordinator.animate(alongsideTransition: nil) { [weak self] _ in
+            self?.contentView.synchronizer.interactionState = .enabled
         }
     }
 }
