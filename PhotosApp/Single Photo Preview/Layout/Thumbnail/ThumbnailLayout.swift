@@ -87,7 +87,7 @@ extension ThumbnailLayout {
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
 
         guard let collectionView = collectionView else { return nil }
-        let offset = collectionView.contentOffset.x + collectionView.bounds.width / 2
+        let offset = collectionView.contentOffset.x + farInset
 
         let cells = (0 ..< itemsCount)
             .map { IndexPath(row: $0, section: 0) }
@@ -129,7 +129,7 @@ extension ThumbnailLayout {
     }
 
     override var collectionViewContentSize: CGSize {
-        let width = CGFloat(itemsCount) * itemSize.width + CGFloat(itemsCount - 1) * config.distanceBetween
+        let width = CGFloat(itemsCount) * (itemSize.width + config.distanceBetween)
         return CGSize(width: width, height: itemSize.height)
     }
 }
@@ -150,10 +150,10 @@ private extension ThumbnailLayout {
 
         guard let attribute = cell.attributes(from: self, with: []) else { return cell }
 
-        let centerX = attribute.center.x
+        let cellOffset = attribute.center.x - itemSize.width / 2
         let widthWithOffset = itemSize.width + config.distanceBetween
-        if abs(centerX - offset) < widthWithOffset {
-            let expanding = 1 - abs(centerX - offset) / widthWithOffset
+        if abs(cellOffset - offset) < widthWithOffset {
+            let expanding = 1 - abs(cellOffset - offset) / widthWithOffset
             return cell.updated(by: .expand(expanding * config.expandingRate))
         }
         return cell

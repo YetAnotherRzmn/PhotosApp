@@ -40,6 +40,7 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
             activeIndex = thumbnails.nearestIndex
         }
         if scrollView == thumbnails.collectionView {
+            print(thumbnails.relativeOffset)
             let index = thumbnails.nearestIndex
             if index != activeIndex {
                 activeIndex = index
@@ -51,7 +52,10 @@ extension ScrollSynchronizer: UICollectionViewDelegate {
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        handle(event: .move(index: indexPath, completion: .none))
+        if activeIndex != indexPath.row {
+            activeIndex = indexPath.row
+            handle(event: .move(index: indexPath, completion: .none))
+        }
     }
 
     func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {

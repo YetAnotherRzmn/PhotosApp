@@ -109,7 +109,7 @@ private extension ThumbnailLayout.Cell {
     }
 
     var center: CGPoint {
-        CGPoint(x: floor(CGFloat(indexPath.row) * (dims.defaultSize.width + dims.inset) + dims.defaultSize.width / 2),
+        CGPoint(x: CGFloat(indexPath.row) * (dims.defaultSize.width + dims.inset) + dims.defaultSize.width / 2,
                 y: dims.defaultSize.height / 2)
     }
 }

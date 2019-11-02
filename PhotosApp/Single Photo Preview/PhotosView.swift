@@ -21,6 +21,7 @@ class PhotosView: UIView & SnapView {
         let thumbnailLayout = ThumbnailLayout(dataSource: sizeForIndex)
         previewCollection = UICollectionView(frame: .zero, collectionViewLayout: previewLayout)
         thumbnailCollection = UICollectionView(frame: .zero, collectionViewLayout: thumbnailLayout)
+        thumbnailCollection.decelerationRate = .fast
         synchronizer = ScrollSynchronizer(
             preview: previewLayout,
             thumbnails: thumbnailLayout)
