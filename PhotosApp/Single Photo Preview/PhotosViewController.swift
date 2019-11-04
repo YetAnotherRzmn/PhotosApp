@@ -64,10 +64,10 @@ class PhotosViewController: UIViewController {
 // MARK: orientation changes
 extension PhotosViewController {
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        contentView.synchronizer.layoutState = .configuring
         super.viewWillTransition(to: size, with: coordinator)
-        contentView.synchronizer.interactionState = .disabled
         coordinator.animate(alongsideTransition: nil) { [weak self] _ in
-            self?.contentView.synchronizer.interactionState = .enabled
+            self?.contentView.synchronizer.layoutState = .ready
         }
     }
 }
