@@ -74,6 +74,7 @@ extension ThumbnailLayout {
 extension ThumbnailLayout {
 
     override func prepare() {
+        super.prepare()
         if let collectionView = collectionView, let layoutHandler = layoutHandler {
             if layoutHandler.needsUpdateOffset {
                 let size = CGSize(
@@ -84,7 +85,6 @@ extension ThumbnailLayout {
                 collectionView.contentInset = insets
             }
         }
-        super.prepare()
     }
 
     final override func prepare(forCollectionViewUpdates updateItems: [UICollectionViewUpdateItem]) {

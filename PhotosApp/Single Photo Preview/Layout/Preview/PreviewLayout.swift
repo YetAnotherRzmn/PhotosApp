@@ -41,6 +41,7 @@ extension PreviewLayout {
     }
 
     override func prepare() {
+        super.prepare()
         if let collectionView = collectionView, let layoutHandler = layoutHandler {
             let size = collectionView.bounds.size
             if size != itemSize {
@@ -52,7 +53,6 @@ extension PreviewLayout {
                 collectionView.contentOffset = targetContentOffset(forProposedContentOffset: offset)
             }
         }
-        super.prepare()
     }
 
     override func layoutAttributesForElements(in rect: CGRect) -> [UICollectionViewLayoutAttributes]? {
