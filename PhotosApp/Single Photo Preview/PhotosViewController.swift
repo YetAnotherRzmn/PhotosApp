@@ -45,6 +45,15 @@ class PhotosViewController: UIViewController {
 
     @objc func onDelete(sender: UIBarButtonItem) {
         guard contentView.synchronizer.interactionState == .enabled else { return }
+		guard let count = dataSource?.images.count, count > 2 else {
+			let alert = UIAlertController(
+				title: "Sorry",
+				message: "This sample does not handle corner cases, however, as one or zero cells",
+				preferredStyle: .alert)
+			alert.addAction(UIAlertAction(title: "OK", style: .cancel))
+			present(alert, animated: true)
+			return
+		}
         let index = contentView.indexInFocus
         let event: ScrollSynchronizer.Event = .remove(
             index: IndexPath(item: index, section: 0),
